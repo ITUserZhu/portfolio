@@ -4,6 +4,10 @@ import { computed } from 'vue';
 
 const store = usePortfolioStore();
 const profile = computed(() => store.profile);
+
+function scrollTo(id) {
+  document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' });
+}
 </script>
 
 <template>
@@ -85,7 +89,7 @@ const profile = computed(() => store.profile);
       <div class="reveal reveal-delay-3 flex flex-wrap items-center justify-center gap-4">
         <a
           href="#projects"
-          @click.prevent="document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' })"
+          @click.prevent="scrollTo('#projects')"
           class="group px-8 py-3.5 rounded-full font-medium text-sm tracking-wide transition-all duration-300
                  hover:shadow-lg hover:shadow-[var(--ink-accent)]/20 hover:-translate-y-0.5"
           style="background: var(--ink-accent); color: var(--ink-bg); font-family: var(--font-body);"
@@ -95,7 +99,7 @@ const profile = computed(() => store.profile);
         </a>
         <a
           href="#contact"
-          @click.prevent="document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' })"
+          @click.prevent="scrollTo('#contact')"
           class="px-8 py-3.5 rounded-full font-medium text-sm tracking-wide transition-all duration-300
                  border hover:-translate-y-0.5"
           style="color: var(--ink-text); border-color: var(--ink-border); font-family: var(--font-body);"
