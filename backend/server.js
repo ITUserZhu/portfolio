@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const connectDB = require('./config/db');
 const apiRoutes = require('./routes/api');
 
 const app = express();
@@ -21,7 +23,10 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ 后端服务已启动: http://localhost:${PORT}`);
-  console.log(`   API 路由: http://localhost:${PORT}/api`);
+// 连接数据库后启动服务
+connectDB().then(() => {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ 后端服务已启动: http://localhost:${PORT}`);
+    console.log(`   API 路由: http://localhost:${PORT}/api`);
+  });
 });
