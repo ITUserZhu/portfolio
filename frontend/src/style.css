@@ -1,0 +1,161 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default, dark;
+}
+
+/* ─── Custom Theme Variables ─── */
+@theme {
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Outfit', system-ui, sans-serif;
+  --color-amber-accent: #D4A853;
+  --color-amber-burn: #E8A838;
+  --color-ink: #1A1A2E;
+  --color-ivory: #FEFAF4;
+  --color-charcoal: #0D0D12;
+  --color-warm-cream: #F5F0E8;
+}
+
+/* ─── Base Styles ─── */
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* ─── Grain Overlay ─── */
+.grain-overlay::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+[data-theme="dark"] .grain-overlay::before {
+  opacity: 0.06;
+}
+
+/* ─── Light Theme Overrides ─── */
+[data-theme="light"] {
+  --ink-bg: var(--color-ivory);
+  --ink-bg-secondary: #F5F0E8;
+  --ink-text: var(--color-ink);
+  --ink-text-muted: #6B6375;
+  --ink-accent: var(--color-amber-accent);
+  --ink-accent-hover: #C49A48;
+  --ink-border: #E5E0D8;
+  --ink-card-bg: #FFFFFF;
+  --ink-card-shadow: 0 4px 24px -4px rgba(26, 26, 46, 0.08);
+}
+
+/* ─── Dark Theme Overrides ─── */
+[data-theme="dark"] {
+  --ink-bg: var(--color-charcoal);
+  --ink-bg-secondary: #141418;
+  --ink-text: var(--color-warm-cream);
+  --ink-text-muted: #9CA3AF;
+  --ink-accent: var(--color-amber-burn);
+  --ink-accent-hover: #D4A853;
+  --ink-border: #2E303A;
+  --ink-card-bg: #1A1A22;
+  --ink-card-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.4);
+}
+
+/* ─── Scroll Reveal Animation ─── */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+.reveal-delay-6 { transition-delay: 0.6s; }
+
+/* ─── Stagger Children ─── */
+.stagger-children > * {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stagger-children.visible > *:nth-child(1) { transition-delay: 0.05s; }
+.stagger-children.visible > *:nth-child(2) { transition-delay: 0.1s; }
+.stagger-children.visible > *:nth-child(3) { transition-delay: 0.15s; }
+.stagger-children.visible > *:nth-child(4) { transition-delay: 0.2s; }
+.stagger-children.visible > *:nth-child(5) { transition-delay: 0.25s; }
+.stagger-children.visible > *:nth-child(6) { transition-delay: 0.3s; }
+
+.stagger-children.visible > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── Skill Bar Animation ─── */
+.skill-bar-fill {
+  width: 0;
+  transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.visible .skill-bar-fill {
+  width: var(--bar-width);
+}
+
+/* ─── Custom Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ink-accent);
+  border-radius: 3px;
+}
+
+/* ─── Section Divider ─── */
+.section-divider {
+  width: 48px;
+  height: 2px;
+  background: var(--ink-accent);
+}
+
+/* ─── Selection ─── */
+::selection {
+  background: var(--color-amber-accent);
+  color: var(--color-ink);
+}
+
+/* ─── Theme Transition ─── */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+}
+
+/* Exclude elements that have their own transition for transform/opacity */
+.reveal, .stagger-children > *, .skill-bar-fill {
+  transition-property: all;
+}
