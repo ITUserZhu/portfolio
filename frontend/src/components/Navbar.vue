@@ -6,18 +6,38 @@ const theme = useThemeStore();
 const scrolled = ref(false);
 const mobileOpen = ref(false);
 
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
 const navLinks = [
-  { label: '首页', href: '#hero' },
-  { label: '技能', href: '#skills' },
-  { label: '项目', href: '#projects' },
-  { label: '关于', href: '#about' },
-  { label: '联系', href: '#contact' },
+  { label: '首页', href: '/', isRoute: true },
+  { label: '技能', href: '#skills', isRoute: false },
+  { label: '项目', href: '#projects', isRoute: false },
+  { label: '词汇', href: '/vocabulary', isRoute: true },
+  { label: '关于', href: '#about', isRoute: false },
+  { label: '联系', href: '#contact', isRoute: false },
 ];
 
-function scrollTo(href) {
+function scrollTo(link) {
   mobileOpen.value = false;
-  const el = document.querySelector(href);
-  if (el) el.scrollIntoView({ behavior: 'smooth' });
+  if (link.isRoute) {
+    router.push(link.href);
+  } else {
+    // 如果当前不在首页，先跳转到首页，然后滚动到对应位置
+    if (router.currentRoute.value.path !== '/') {
+      router.push('/').then(() => {
+        setTimeout(() => {
+          const el = document.querySelector(link.href);
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      });
+    } else {
+      // 如果已经在首页，直接滚动
+      const el = document.querySelector(link.href);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
 }
 
 onMounted(() => {
@@ -50,10 +70,10 @@ onMounted(() => {
         <a
           v-for="link in navLinks"
           :key="link.href"
-          :href="link.href"
-          @click.prevent="scrollTo(link.href)"
+          :href="link.isRoute ? undefined : link.href"
+          @click.prevent="scrollTo(link)"
           class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300
-                 hover:bg-[var(--ink-accent)]/10"
+                 hover:bg-[var(--ink-accent)]/10 cursor-pointer"
           style="color: var(--ink-text-muted); font-family: var(--font-body);"
         >
           {{ link.label }}
@@ -116,9 +136,9 @@ onMounted(() => {
         <a
           v-for="link in navLinks"
           :key="link.href"
-          :href="link.href"
-          @click.prevent="scrollTo(link.href)"
-          class="block px-6 py-3 text-base font-medium transition-colors"
+          :href="link.isRoute ? undefined : link.href"
+          @click.prevent="scrollTo(link)"
+          class="block px-6 py-3 text-base font-medium transition-colors cursor-pointer"
           style="color: var(--ink-text-muted);"
         >
           {{ link.label }}
