@@ -42,7 +42,7 @@ onMounted(() => {
         class="font-display text-2xl font-bold tracking-tight"
         style="color: var(--ink-accent); font-family: var(--font-display);"
       >
-        A<span style="color: var(--ink-text);">.</span>C
+        Juleon<span style="color: var(--ink-text);">.</span>Z
       </a>
 
       <!-- Desktop Nav -->

@@ -26,7 +26,7 @@ function scrollToTop() {
           class="text-sm"
           style="color: var(--ink-text-muted); font-family: var(--font-body);"
         >
-          &copy; {{ new Date().getFullYear() }} Alex Chen. Crafted with passion.
+          &copy; {{ new Date().getFullYear() }} Juleon. Crafted with passion.
         </p>
 
         <!-- Back to Top -->
