@@ -6,6 +6,10 @@ const Skill = require('../models/Skill');
 const Project = require('../models/Project');
 const Contact = require('../models/Contact');
 const Vocabulary = require('../models/Vocabulary');
+const {
+  normalizeVocabularyWord,
+  filterDuplicateVocabularyItems,
+} = require('../utils/vocabularyDedup');
 
 // 转义正则特殊字符，防止 NoSQL 注入
 function escapeRegex(str) {
@@ -194,11 +198,42 @@ router.post('/vocabulary', auth, async (req, res) => {
         });
       }
     }
-    const result = await Vocabulary.insertMany(items, { ordered: false });
+
+    const normalizedWords = [
+      ...new Set(items.map((item) => normalizeVocabularyWord(item.word)).filter(Boolean)),
+    ];
+    const existingDocs = normalizedWords.length
+      ? await Vocabulary.find({
+          $or: normalizedWords.map((word) => ({
+            word: { $regex: `^${escapeRegex(word)}$`, $options: 'i' },
+          })),
+        }).select('word')
+      : [];
+    const existingWords = existingDocs.map((doc) => doc.word);
+    const { itemsToInsert, skippedCount, skippedWords } = filterDuplicateVocabularyItems(
+      items,
+      existingWords
+    );
+
+    if (itemsToInsert.length === 0) {
+      return res.json({
+        status: 'success',
+        data: [],
+        message: `没有新增词汇，已跳过 ${skippedCount} 条重复单词`,
+        meta: { insertedCount: 0, skippedCount, skippedWords },
+      });
+    }
+
+    const result = await Vocabulary.insertMany(itemsToInsert, { ordered: false });
+    const message = skippedCount > 0
+      ? `成功添加 ${result.length} 条词汇，跳过 ${skippedCount} 条重复单词`
+      : `成功添加 ${result.length} 条词汇`;
+
     res.status(201).json({
       status: 'success',
       data: result,
-      message: `成功添加 ${result.length} 条词汇`,
+      message,
+      meta: { insertedCount: result.length, skippedCount, skippedWords },
     });
   } catch {
     res.status(400).json({ status: 'error', message: '添加失败，请检查输入格式' });
