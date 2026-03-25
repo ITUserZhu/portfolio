@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { optionalAuth, requireAuth, requireAdmin } = require('../middleware/auth');
+const { auth, optionalAuth, requireAuth, requireAdmin } = require('../middleware/auth');
 const Profile = require('../models/Profile');
 const Skill = require('../models/Skill');
 const Project = require('../models/Project');
@@ -100,14 +100,32 @@ router.get('/vocabulary', optionalAuth, async (req, res) => {
 
     if (category) filter.category = String(category);
     if (difficulty) filter.difficulty = String(difficulty);
-    if (isFavorite !== undefined) filter.isFavorite = isFavorite === 'true';
-    if (isMastered !== undefined) filter.isMastered = isMastered === 'true';
 
     const skip = (page - 1) * limit;
-    const [vocabularies, total] = await Promise.all([
-      Vocabulary.find(filter).sort({ isFavorite: -1, createdAt: -1 }).skip(skip).limit(limit),
-      Vocabulary.countDocuments(filter),
-    ]);
+    let vocabularies = await Vocabulary.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit);
+    const total = await Vocabulary.countDocuments(filter);
+
+    // 如果用户已登录，获取用户的收藏和掌握状态
+    if (req.user) {
+      const User = require('../models/User');
+      const user = await User.findById(req.user.id);
+      if (user) {
+        vocabularies = vocabularies.map(vocab => {
+          const vocabObj = vocab.toObject();
+          vocabObj.isFavorite = user.favorites.includes(vocab._id);
+          vocabObj.isMastered = user.mastered.includes(vocab._id);
+          return vocabObj;
+        });
+      }
+    }
+
+    // 应用筛选
+    if (isFavorite !== undefined) {
+      vocabularies = vocabularies.filter(v => v.isFavorite === (isFavorite === 'true'));
+    }
+    if (isMastered !== undefined) {
+      vocabularies = vocabularies.filter(v => v.isMastered === (isMastered === 'true'));
+    }
 
     res.json({
       status: 'success',
@@ -143,13 +161,23 @@ router.get('/vocabulary/random-batch', optionalAuth, async (req, res) => {
 // 词汇统计（公开）- 游客可访问
 router.get('/vocabulary-stats', optionalAuth, async (req, res) => {
   try {
-    const [total, mastered, favorites, byCategory, byDifficulty] = await Promise.all([
-      Vocabulary.countDocuments(),
-      Vocabulary.countDocuments({ isMastered: true }),
-      Vocabulary.countDocuments({ isFavorite: true }),
-      Vocabulary.aggregate([{ $group: { _id: '$category', count: { $sum: 1 } } }]),
-      Vocabulary.aggregate([{ $group: { _id: '$difficulty', count: { $sum: 1 } } }]),
-    ]);
+    const total = await Vocabulary.countDocuments();
+    const byCategory = await Vocabulary.aggregate([{ $group: { _id: '$category', count: { $sum: 1 } } }]);
+    const byDifficulty = await Vocabulary.aggregate([{ $group: { _id: '$difficulty', count: { $sum: 1 } } }]);
+    
+    let mastered = 0;
+    let favorites = 0;
+    
+    // 如果用户已登录，获取用户的收藏和掌握数量
+    if (req.user) {
+      const User = require('../models/User');
+      const user = await User.findById(req.user.id);
+      if (user) {
+        favorites = user.favorites.length;
+        mastered = user.mastered.length;
+      }
+    }
+    
     res.json({
       status: 'success',
       data: {
@@ -179,7 +207,7 @@ router.get('/vocabulary/:id', optionalAuth, async (req, res) => {
 // ==================== 以下接口需要认证 ====================
 
 // 添加词汇（支持单个对象或数组批量导入）- 仅管理员
-router.post('/vocabulary', requireAdmin, async (req, res) => {
+router.post('/vocabulary', auth, requireAdmin, async (req, res) => {
   try {
     const items = Array.isArray(req.body) ? req.body : [req.body];
     if (items.length === 0) {
@@ -241,7 +269,7 @@ router.post('/vocabulary', requireAdmin, async (req, res) => {
 });
 
 // 更新词汇 - 仅管理员
-router.put('/vocabulary/:id', requireAdmin, async (req, res) => {
+router.put('/vocabulary/:id', auth, requireAdmin, async (req, res) => {
   try {
     const vocabulary = await Vocabulary.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -255,7 +283,7 @@ router.put('/vocabulary/:id', requireAdmin, async (req, res) => {
 });
 
 // 删除词汇 - 仅管理员
-router.delete('/vocabulary/:id', requireAdmin, async (req, res) => {
+router.delete('/vocabulary/:id', auth, requireAdmin, async (req, res) => {
   try {
     const vocabulary = await Vocabulary.findByIdAndDelete(req.params.id);
     if (!vocabulary) return res.status(404).json({ status: 'error', message: '词汇不存在' });
@@ -266,35 +294,69 @@ router.delete('/vocabulary/:id', requireAdmin, async (req, res) => {
 });
 
 // 切换收藏状态 - 需要登录
-router.patch('/vocabulary/:id/favorite', requireAuth, async (req, res) => {
+router.patch('/vocabulary/:id/favorite', auth, requireAuth, async (req, res) => {
   try {
+    const User = require('../models/User');
     const vocabulary = await Vocabulary.findById(req.params.id);
     if (!vocabulary) return res.status(404).json({ status: 'error', message: '词汇不存在' });
-    vocabulary.isFavorite = !vocabulary.isFavorite;
-    await vocabulary.save();
+    
+    // 确保 req.user.id 存在
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ status: 'error', message: '用户认证失败' });
+    }
+    
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ status: 'error', message: '用户不存在' });
+    
+    const isFavorite = user.favorites.includes(vocabulary._id);
+    if (isFavorite) {
+      user.favorites.pull(vocabulary._id);
+    } else {
+      user.favorites.push(vocabulary._id);
+    }
+    await user.save();
+    
     res.json({
       status: 'success',
-      data: vocabulary,
-      message: vocabulary.isFavorite ? '已添加到收藏' : '已取消收藏',
+      data: { isFavorite: !isFavorite },
+      message: !isFavorite ? '已添加到收藏' : '已取消收藏',
     });
-  } catch {
+  } catch (error) {
+    console.error('收藏操作失败:', error);
     res.status(500).json({ status: 'error', message: '服务器错误' });
   }
 });
 
 // 切换掌握状态 - 需要登录
-router.patch('/vocabulary/:id/mastered', requireAuth, async (req, res) => {
+router.patch('/vocabulary/:id/mastered', auth, requireAuth, async (req, res) => {
   try {
+    const User = require('../models/User');
     const vocabulary = await Vocabulary.findById(req.params.id);
     if (!vocabulary) return res.status(404).json({ status: 'error', message: '词汇不存在' });
-    vocabulary.isMastered = !vocabulary.isMastered;
-    await vocabulary.save();
+    
+    // 确保 req.user.id 存在
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ status: 'error', message: '用户认证失败' });
+    }
+    
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ status: 'error', message: '用户不存在' });
+    
+    const isMastered = user.mastered.includes(vocabulary._id);
+    if (isMastered) {
+      user.mastered.pull(vocabulary._id);
+    } else {
+      user.mastered.push(vocabulary._id);
+    }
+    await user.save();
+    
     res.json({
       status: 'success',
-      data: vocabulary,
-      message: vocabulary.isMastered ? '已标记为已掌握' : '已标记为未掌握',
+      data: { isMastered: !isMastered },
+      message: !isMastered ? '已标记为已掌握' : '已标记为未掌握',
     });
-  } catch {
+  } catch (error) {
+    console.error('掌握操作失败:', error);
     res.status(500).json({ status: 'error', message: '服务器错误' });
   }
 });

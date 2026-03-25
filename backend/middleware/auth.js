@@ -9,9 +9,16 @@ function auth(req, res, next) {
 
   try {
     const token = header.split(' ')[1];
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('验证token:', token.substring(0, 20) + '...');
+    console.log('JWT_SECRET:', process.env.JWT_SECRET ? '已设置' : '未设置');
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('解码后的用户信息:', decoded);
+    
+    req.user = decoded;
     next();
-  } catch {
+  } catch (error) {
+    console.error('JWT验证失败:', error.message);
     res.status(401).json({ status: 'error', message: '登录已过期' });
   }
 }
@@ -56,6 +63,7 @@ function requireAdmin(req, res, next) {
 
 // 检查是否登录（任何已登录用户）
 function requireAuth(req, res, next) {
+  console.log(req.user)
   if (!req.user) {
     return res.status(401).json({ status: 'error', message: '请先登录' });
   }
