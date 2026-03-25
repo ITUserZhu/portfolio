@@ -6,10 +6,26 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+// 请求拦截器：自动附加 token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// 响应拦截器：处理 401 自动跳转登录
 api.interceptors.response.use(
   (res) => res.data,
   (err) => {
-    console.error('API Error:', err.message);
+    if (err.response?.status === 401) {
+      localStorage.removeItem('auth_token');
+      // 避免在登录页重复跳转
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
     return Promise.reject(err);
   }
 );

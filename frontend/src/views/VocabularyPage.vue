@@ -71,6 +71,17 @@ const categoryOptions = [
 // 计算属性
 const filteredVocabularies = computed(() => vocabularies.value);
 
+// 分页：只显示当前页附近的页码
+const visiblePages = computed(() => {
+  const pages = [];
+  const start = Math.max(1, currentPage.value - 2);
+  const end = Math.min(totalPages.value, currentPage.value + 2);
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+  return pages;
+});
+
 // 获取词汇列表
 async function fetchVocabularies() {
   loading.value = true;
@@ -574,18 +585,53 @@ onMounted(() => {
         </div>
 
         <!-- Pagination -->
-        <div v-if="totalPages > 1" class="flex justify-center gap-3 mt-16">
+        <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-16">
+          <!-- 上一页 -->
           <button
-            v-for="page in totalPages"
+            @click="changePage(currentPage - 1)"
+            :disabled="currentPage === 1"
+            class="px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300
+                   hover:shadow-lg disabled:opacity-30 disabled:cursor-not-allowed"
+            style="border: 1px solid var(--ink-border); color: var(--ink-text);"
+          >&lsaquo;</button>
+
+          <!-- 第一页 -->
+          <button
+            v-if="currentPage > 3"
+            @click="changePage(1)"
+            class="px-5 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-lg"
+            style="border: 1px solid var(--ink-border); color: var(--ink-text);"
+          >1</button>
+          <span v-if="currentPage > 4" class="px-2 opacity-40">...</span>
+
+          <!-- 中间页码 -->
+          <button
+            v-for="page in visiblePages"
             :key="page"
             @click="changePage(page)"
             class="px-5 py-3 rounded-xl text-sm font-medium transition-all duration-300
                    hover:shadow-lg"
             :class="page === currentPage ? 'bg-[var(--ink-accent)] text-[var(--ink-bg)] shadow-xl' : ''"
             style="border: 1px solid var(--ink-border); color: var(--ink-text);"
-          >
-            {{ page }}
-          </button>
+          >{{ page }}</button>
+
+          <!-- 最后一页 -->
+          <span v-if="currentPage < totalPages - 3" class="px-2 opacity-40">...</span>
+          <button
+            v-if="currentPage < totalPages - 2"
+            @click="changePage(totalPages)"
+            class="px-5 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-lg"
+            style="border: 1px solid var(--ink-border); color: var(--ink-text);"
+          >{{ totalPages }}</button>
+
+          <!-- 下一页 -->
+          <button
+            @click="changePage(currentPage + 1)"
+            :disabled="currentPage === totalPages"
+            class="px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300
+                   hover:shadow-lg disabled:opacity-30 disabled:cursor-not-allowed"
+            style="border: 1px solid var(--ink-border); color: var(--ink-text);"
+          >&rsaquo;</button>
         </div>
       </div>
     </div>

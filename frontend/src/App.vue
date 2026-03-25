@@ -8,7 +8,9 @@ import FooterSection from './components/Footer.vue';
 const theme = useThemeStore();
 const route = useRoute();
 
-const showLayout = computed(() => route.path !== '/vocabulary/memory');
+const showLayout = computed(() =>
+  route.path !== '/vocabulary/memory' && route.path !== '/login'
+);
 
 onMounted(() => {
   theme.init();
