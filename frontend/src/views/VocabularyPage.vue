@@ -613,53 +613,93 @@ onMounted(() => {
         </div>
 
         <!-- Pagination -->
-        <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-16">
-          <!-- 上一页 -->
-          <button
-            @click="changePage(currentPage - 1)"
-            :disabled="currentPage === 1"
-            class="px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300
-                   hover:shadow-lg disabled:opacity-30 disabled:cursor-not-allowed"
-            style="border: 1px solid var(--ink-border); color: var(--ink-text);"
-          >&lsaquo;</button>
+        <div v-if="totalPages > 1" class="mt-16">
+          <!-- 移动端：紧凑横向滚动分页 -->
+          <div class="md:hidden">
+            <div class="flex items-center justify-center gap-1 overflow-x-auto pb-2 px-2">
+              <!-- 上一页 -->
+              <button
+                @click="changePage(currentPage - 1)"
+                :disabled="currentPage === 1"
+                class="flex-shrink-0 w-10 h-10 rounded-lg text-sm font-medium transition-all duration-300
+                       hover:shadow-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                style="border: 1px solid var(--ink-border); color: var(--ink-text);"
+              >&lsaquo;</button>
 
-          <!-- 第一页 -->
-          <button
-            v-if="currentPage > 3"
-            @click="changePage(1)"
-            class="px-5 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-lg"
-            style="border: 1px solid var(--ink-border); color: var(--ink-text);"
-          >1</button>
-          <span v-if="currentPage > 4" class="px-2 opacity-40">...</span>
+              <!-- 页码按钮 -->
+              <div class="flex gap-1 overflow-x-auto">
+                <button
+                  v-for="page in visiblePages"
+                  :key="page"
+                  @click="changePage(page)"
+                  class="flex-shrink-0 w-10 h-10 rounded-lg text-sm font-medium transition-all duration-300
+                         hover:shadow-lg"
+                  :class="page === currentPage ? 'bg-[var(--ink-accent)] text-[var(--ink-bg)] shadow-xl' : ''"
+                  style="border: 1px solid var(--ink-border); color: var(--ink-text);"
+                >{{ page }}</button>
+              </div>
 
-          <!-- 中间页码 -->
-          <button
-            v-for="page in visiblePages"
-            :key="page"
-            @click="changePage(page)"
-            class="px-5 py-3 rounded-xl text-sm font-medium transition-all duration-300
-                   hover:shadow-lg"
-            :class="page === currentPage ? 'bg-[var(--ink-accent)] text-[var(--ink-bg)] shadow-xl' : ''"
-            style="border: 1px solid var(--ink-border); color: var(--ink-text);"
-          >{{ page }}</button>
+              <!-- 下一页 -->
+              <button
+                @click="changePage(currentPage + 1)"
+                :disabled="currentPage === totalPages"
+                class="flex-shrink-0 w-10 h-10 rounded-lg text-sm font-medium transition-all duration-300
+                       hover:shadow-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                style="border: 1px solid var(--ink-border); color: var(--ink-text);"
+              >&rsaquo;</button>
+            </div>
+            <p class="text-center text-xs mt-2 opacity-50">第 {{ currentPage }} / {{ totalPages }} 页</p>
+          </div>
 
-          <!-- 最后一页 -->
-          <span v-if="currentPage < totalPages - 3" class="px-2 opacity-40">...</span>
-          <button
-            v-if="currentPage < totalPages - 2"
-            @click="changePage(totalPages)"
-            class="px-5 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-lg"
-            style="border: 1px solid var(--ink-border); color: var(--ink-text);"
-          >{{ totalPages }}</button>
+          <!-- 桌面端：完整分页 -->
+          <div class="hidden md:flex justify-center items-center gap-2">
+            <!-- 上一页 -->
+            <button
+              @click="changePage(currentPage - 1)"
+              :disabled="currentPage === 1"
+              class="px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300
+                     hover:shadow-lg disabled:opacity-30 disabled:cursor-not-allowed"
+              style="border: 1px solid var(--ink-border); color: var(--ink-text);"
+            >&lsaquo;</button>
 
-          <!-- 下一页 -->
-          <button
-            @click="changePage(currentPage + 1)"
-            :disabled="currentPage === totalPages"
-            class="px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300
-                   hover:shadow-lg disabled:opacity-30 disabled:cursor-not-allowed"
-            style="border: 1px solid var(--ink-border); color: var(--ink-text);"
-          >&rsaquo;</button>
+            <!-- 第一页 -->
+            <button
+              v-if="currentPage > 3"
+              @click="changePage(1)"
+              class="px-5 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-lg"
+              style="border: 1px solid var(--ink-border); color: var(--ink-text);"
+            >1</button>
+            <span v-if="currentPage > 4" class="px-2 opacity-40">...</span>
+
+            <!-- 中间页码 -->
+            <button
+              v-for="page in visiblePages"
+              :key="page"
+              @click="changePage(page)"
+              class="px-5 py-3 rounded-xl text-sm font-medium transition-all duration-300
+                     hover:shadow-lg"
+              :class="page === currentPage ? 'bg-[var(--ink-accent)] text-[var(--ink-bg)] shadow-xl' : ''"
+              style="border: 1px solid var(--ink-border); color: var(--ink-text);"
+            >{{ page }}</button>
+
+            <!-- 最后一页 -->
+            <span v-if="currentPage < totalPages - 3" class="px-2 opacity-40">...</span>
+            <button
+              v-if="currentPage < totalPages - 2"
+              @click="changePage(totalPages)"
+              class="px-5 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-lg"
+              style="border: 1px solid var(--ink-border); color: var(--ink-text);"
+            >{{ totalPages }}</button>
+
+            <!-- 下一页 -->
+            <button
+              @click="changePage(currentPage + 1)"
+              :disabled="currentPage === totalPages"
+              class="px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300
+                     hover:shadow-lg disabled:opacity-30 disabled:cursor-not-allowed"
+              style="border: 1px solid var(--ink-border); color: var(--ink-text);"
+            >&rsaquo;</button>
+          </div>
         </div>
       </div>
     </div>
@@ -678,19 +718,19 @@ onMounted(() => {
         @click.self="closeModal"
       >
         <div
-          class="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl p-8"
+          class="w-full max-w-3xl max-h-[90vh] overflow-y-auto overflow-x-hidden rounded-2xl p-4 md:p-8"
           style="background: var(--ink-card-bg);"
         >
-          <h3 class="text-3xl font-bold mb-8" style="color: var(--ink-text);">
+          <h3 class="text-2xl md:text-3xl font-bold mb-6 md:mb-8" style="color: var(--ink-text);">
             {{ editingVocabulary ? '编辑词汇' : '添加新词汇' }}
           </h3>
 
           <!-- 输入模式切换（仅添加时显示） -->
-          <div v-if="!editingVocabulary" class="flex gap-3 mb-8">
+          <div v-if="!editingVocabulary" class="flex gap-2 md:gap-3 mb-6 md:mb-8">
             <button
               type="button"
               @click="jsonMode = false"
-              class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300"
+              class="px-3 md:px-5 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-medium transition-all duration-300"
               :class="!jsonMode ? 'text-white' : ''"
               :style="!jsonMode
                 ? 'background: var(--ink-accent);'
@@ -699,7 +739,7 @@ onMounted(() => {
             <button
               type="button"
               @click="jsonMode = true"
-              class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300"
+              class="px-3 md:px-5 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-medium transition-all duration-300"
               :class="jsonMode ? 'text-white' : ''"
               :style="jsonMode
                 ? 'background: var(--ink-accent);'
@@ -714,7 +754,7 @@ onMounted(() => {
             </p>
             <textarea
               v-model="jsonInput"
-              rows="16"
+              rows="12"
               placeholder='[
   {
     "word": "hello",
@@ -728,18 +768,18 @@ onMounted(() => {
     "examples": [{ "sentence": "Hello!", "translation": "你好！" }]
   }
 ]'
-              class="w-full px-5 py-4 rounded-xl border text-sm outline-none font-mono
+              class="w-full px-4 md:px-5 py-3 md:py-4 rounded-xl border text-xs md:text-sm outline-none font-mono
                      transition-all duration-300 focus:border-[var(--ink-accent)] focus:shadow-lg resize-none"
               style="background: var(--ink-bg); border-color: var(--ink-border);
                      color: var(--ink-text);"
             ></textarea>
             <p v-if="jsonError" class="text-sm text-red-500 mt-3">{{ jsonError }}</p>
 
-            <div class="flex gap-4 pt-6">
+            <div class="flex gap-3 md:gap-4 pt-4 md:pt-6">
               <button
                 type="button"
                 @click="closeModal"
-                class="flex-1 py-4 rounded-xl font-medium text-sm border
+                class="flex-1 py-3 md:py-4 rounded-xl font-medium text-xs md:text-sm border
                        transition-all duration-300 hover:bg-[var(--ink-accent)]/10"
                 style="border-color: var(--ink-border); color: var(--ink-text);"
               >取消</button>
@@ -747,7 +787,7 @@ onMounted(() => {
                 type="button"
                 @click="handleJsonSubmit"
                 :disabled="!jsonInput.trim()"
-                class="flex-1 py-4 rounded-xl font-bold text-sm
+                class="flex-1 py-3 md:py-4 rounded-xl font-bold text-xs md:text-sm
                        transition-all duration-300 hover:shadow-xl hover:-translate-y-1
                        disabled:opacity-40 disabled:cursor-not-allowed"
                 style="background: var(--ink-accent); color: var(--ink-bg);"
@@ -755,25 +795,25 @@ onMounted(() => {
             </div>
           </div>
 
-          <form v-else @submit.prevent="handleSubmit" class="space-y-6">
+          <form v-else @submit.prevent="handleSubmit" class="space-y-4 md:space-y-6">
             <!-- Basic Info -->
-            <div class="grid md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div>
-                <label class="block text-sm font-medium mb-3" style="color: var(--ink-text);">
+                <label class="block text-xs md:text-sm font-medium mb-2 md:mb-3" style="color: var(--ink-text);">
                   单词 *
                 </label>
                 <input
                   v-model="form.word"
                   type="text"
                   required
-                  class="w-full px-5 py-4 rounded-xl border text-sm outline-none
+                  class="w-full px-4 md:px-5 py-3 md:py-4 rounded-xl border text-xs md:text-sm outline-none
                          transition-all duration-300 focus:border-[var(--ink-accent)] focus:shadow-lg"
                   style="background: var(--ink-bg); border-color: var(--ink-border);
                          color: var(--ink-text);"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium mb-3" style="color: var(--ink-text);">
+                <label class="block text-xs md:text-sm font-medium mb-2 md:mb-3" style="color: var(--ink-text);">
                   音标 *
                 </label>
                 <input
@@ -781,7 +821,7 @@ onMounted(() => {
                   type="text"
                   required
                   placeholder="/həˈloʊ/"
-                  class="w-full px-5 py-4 rounded-xl border text-sm outline-none
+                  class="w-full px-4 md:px-5 py-3 md:py-4 rounded-xl border text-xs md:text-sm outline-none
                          transition-all duration-300 focus:border-[var(--ink-accent)] focus:shadow-lg"
                   style="background: var(--ink-bg); border-color: var(--ink-border);
                          color: var(--ink-text);"
@@ -789,9 +829,9 @@ onMounted(() => {
               </div>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               <div>
-                <label class="block text-sm font-medium mb-3" style="color: var(--ink-text);">
+                <label class="block text-xs md:text-sm font-medium mb-2 md:mb-3" style="color: var(--ink-text);">
                   词性
                 </label>
                 <AppSelect
@@ -805,7 +845,7 @@ onMounted(() => {
                 </AppSelect>
               </div>
               <div>
-                <label class="block text-sm font-medium mb-3" style="color: var(--ink-text);">
+                <label class="block text-xs md:text-sm font-medium mb-2 md:mb-3" style="color: var(--ink-text);">
                   难度
                 </label>
                 <AppSelect
@@ -819,7 +859,7 @@ onMounted(() => {
                 </AppSelect>
               </div>
               <div>
-                <label class="block text-sm font-medium mb-3" style="color: var(--ink-text);">
+                <label class="block text-xs md:text-sm font-medium mb-2 md:mb-3" style="color: var(--ink-text);">
                   分类
                 </label>
                 <AppSelect
@@ -835,14 +875,14 @@ onMounted(() => {
             </div>
 
             <div>
-              <label class="block text-sm font-medium mb-3" style="color: var(--ink-text);">
+              <label class="block text-xs md:text-sm font-medium mb-2 md:mb-3" style="color: var(--ink-text);">
                 中文翻译 *
               </label>
               <input
                 v-model="form.translation"
                 type="text"
                 required
-                class="w-full px-5 py-4 rounded-xl border text-sm outline-none
+                class="w-full px-4 md:px-5 py-3 md:py-4 rounded-xl border text-xs md:text-sm outline-none
                        transition-all duration-300 focus:border-[var(--ink-accent)] focus:shadow-lg"
                 style="background: var(--ink-bg); border-color: var(--ink-border);
                        color: var(--ink-text);"
@@ -850,14 +890,14 @@ onMounted(() => {
             </div>
 
             <div>
-              <label class="block text-sm font-medium mb-3" style="color: var(--ink-text);">
+              <label class="block text-xs md:text-sm font-medium mb-2 md:mb-3" style="color: var(--ink-text);">
                 英文释义 *
               </label>
               <textarea
                 v-model="form.definition"
                 rows="3"
                 required
-                class="w-full px-5 py-4 rounded-xl border text-sm outline-none resize-none
+                class="w-full px-4 md:px-5 py-3 md:py-4 rounded-xl border text-xs md:text-sm outline-none resize-none
                        transition-all duration-300 focus:border-[var(--ink-accent)] focus:shadow-lg"
                 style="background: var(--ink-bg); border-color: var(--ink-border);
                        color: var(--ink-text);"
@@ -866,15 +906,15 @@ onMounted(() => {
 
             <!-- Phrases -->
             <div>
-              <label class="block text-sm font-medium mb-3" style="color: var(--ink-text);">
+              <label class="block text-xs md:text-sm font-medium mb-2 md:mb-3" style="color: var(--ink-text);">
                 常用词组
               </label>
-              <div v-for="(phrase, index) in form.phrases" :key="index" class="flex gap-3 mb-3">
+              <div v-for="(phrase, index) in form.phrases" :key="index" class="flex flex-col md:flex-row gap-2 md:gap-3 mb-3">
                 <input
                   v-model="phrase.phrase"
                   type="text"
                   placeholder="词组"
-                  class="flex-1 px-4 py-3 rounded-lg border text-sm outline-none
+                  class="flex-1 px-3 md:px-4 py-2 md:py-3 rounded-lg border text-xs md:text-sm outline-none
                          transition-all duration-300 focus:border-[var(--ink-accent)]"
                   style="background: var(--ink-bg); border-color: var(--ink-border);
                          color: var(--ink-text);"
@@ -883,7 +923,7 @@ onMounted(() => {
                   v-model="phrase.translation"
                   type="text"
                   placeholder="翻译"
-                  class="flex-1 px-4 py-3 rounded-lg border text-sm outline-none
+                  class="flex-1 px-3 md:px-4 py-2 md:py-3 rounded-lg border text-xs md:text-sm outline-none
                          transition-all duration-300 focus:border-[var(--ink-accent)]"
                   style="background: var(--ink-bg); border-color: var(--ink-border);
                          color: var(--ink-text);"
@@ -891,8 +931,8 @@ onMounted(() => {
                 <button
                   type="button"
                   @click="removePhrase(index)"
-                  class="px-4 py-3 rounded-lg text-red-400 hover:bg-red-500/10
-                         transition-all duration-300"
+                  class="px-3 md:px-4 py-2 md:py-3 rounded-lg text-red-400 hover:bg-red-500/10
+                         transition-all duration-300 self-end md:self-auto"
                 >
                   ✕
                 </button>
@@ -900,7 +940,7 @@ onMounted(() => {
               <button
                 type="button"
                 @click="addPhrase"
-                class="text-sm px-5 py-3 rounded-lg border transition-all duration-300
+                class="text-xs md:text-sm px-4 md:px-5 py-2 md:py-3 rounded-lg border transition-all duration-300
                        hover:bg-[var(--ink-accent)]/10"
                 style="border-color: var(--ink-border); color: var(--ink-accent);"
               >
@@ -910,43 +950,43 @@ onMounted(() => {
 
             <!-- Examples -->
             <div>
-              <label class="block text-sm font-medium mb-3" style="color: var(--ink-text);">
+              <label class="block text-xs md:text-sm font-medium mb-2 md:mb-3" style="color: var(--ink-text);">
                 例句
               </label>
-              <div v-for="(example, index) in form.examples" :key="index" class="mb-4 p-5 rounded-xl border" style="border-color: var(--ink-border);">
-                <div class="flex gap-3 mb-3">
-                  <textarea
+              <div v-for="(example, index) in form.examples" :key="index" class="mb-4 p-3 md:p-5 rounded-xl border" style="border-color: var(--ink-border);">
+                <textarea
                     v-model="example.sentence"
                     rows="2"
                     placeholder="英文例句"
-                    class="flex-1 px-4 py-3 rounded-lg border text-sm outline-none resize-none
+                    class="flex-1 px-3 md:px-4 py-2 md:py-3 rounded-lg border text-xs md:text-sm outline-none resize-none
                            transition-all duration-300 focus:border-[var(--ink-accent)]"
-                    style="background: var(--ink-bg); border-color: var(--ink-border);
+                    style="width: 100%; background: var(--ink-bg); border-color: var(--ink-border);
                            color: var(--ink-text);"
                   ></textarea>
-                  <button
-                    type="button"
-                    @click="removeExample(index)"
-                    class="px-4 py-3 rounded-lg text-red-400 hover:bg-red-500/10
-                           transition-all duration-300 self-start"
-                  >
-                    ✕
-                  </button>
-                </div>
-                <input
+                <div class="flex flex-col md:flex-row gap-2 md:gap-3 mb-3">
+                  <input
                   v-model="example.translation"
                   type="text"
                   placeholder="中文翻译"
-                  class="w-full px-4 py-3 rounded-lg border text-sm outline-none
+                  class="w-full px-3 md:px-4 py-2 md:py-3 rounded-lg border text-xs md:text-sm outline-none
                          transition-all duration-300 focus:border-[var(--ink-accent)]"
                   style="background: var(--ink-bg); border-color: var(--ink-border);
                          color: var(--ink-text);"
                 />
+                  <button
+                    type="button"
+                    @click="removeExample(index)"
+                    class="px-3 md:px-4 py-2 md:py-3 rounded-lg text-red-400 hover:bg-red-500/10
+                           transition-all duration-300 self-end md:self-start"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
               <button
                 type="button"
                 @click="addExample"
-                class="text-sm px-5 py-3 rounded-lg border transition-all duration-300
+                class="text-xs md:text-sm px-4 md:px-5 py-2 md:py-3 rounded-lg border transition-all duration-300
                        hover:bg-[var(--ink-accent)]/10"
                 style="border-color: var(--ink-border); color: var(--ink-accent);"
               >
@@ -955,11 +995,11 @@ onMounted(() => {
             </div>
 
             <!-- Actions -->
-            <div class="flex gap-4 pt-6">
+            <div class="flex gap-3 md:gap-4 pt-4 md:pt-6">
               <button
                 type="button"
                 @click="closeModal"
-                class="flex-1 py-4 rounded-xl font-medium text-sm border
+                class="flex-1 py-3 md:py-4 rounded-xl font-medium text-xs md:text-sm border
                        transition-all duration-300 hover:bg-[var(--ink-accent)]/10"
                 style="border-color: var(--ink-border); color: var(--ink-text);"
               >
@@ -967,7 +1007,7 @@ onMounted(() => {
               </button>
               <button
                 type="submit"
-                class="flex-1 py-4 rounded-xl font-bold text-sm
+                class="flex-1 py-3 md:py-4 rounded-xl font-bold text-xs md:text-sm
                        transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
                 style="background: var(--ink-accent); color: var(--ink-bg);"
               >

@@ -54,9 +54,27 @@ const hasNext = computed(() => currentIndex.value < words.value.length - 1);
 const cardRef = ref(null);
 const justSwiped = ref(false);
 const swipe = useSwipe(null, {
-  onSwipeUp: () => { justSwiped.value = true; handleNext(); },
-  onSwipeLeft: () => { justSwiped.value = true; handleMastered(); },
-  onSwipeRight: () => { justSwiped.value = true; handleFavorite(); },
+  onSwipeUp: () => { 
+    // 只有在卡片正面（未翻转）时才允许滑动
+    if (!isFlipped.value) {
+      justSwiped.value = true; 
+      handleNext(); 
+    }
+  },
+  onSwipeLeft: () => { 
+    // 只有在卡片正面（未翻转）时才允许滑动
+    if (!isFlipped.value) {
+      justSwiped.value = true; 
+      handleMastered(); 
+    }
+  },
+  onSwipeRight: () => { 
+    // 只有在卡片正面（未翻转）时才允许滑动
+    if (!isFlipped.value) {
+      justSwiped.value = true; 
+      handleFavorite(); 
+    }
+  },
 });
 
 onMounted(() => {
@@ -162,6 +180,15 @@ async function handleNext() {
 
   if (hasNext.value) {
     currentIndex.value++;
+    // 重置卡片背面的滚动位置到顶部
+    nextTick(() => {
+      if (cardRef.value) {
+        const cardBack = cardRef.value.querySelector('.card-back');
+        if (cardBack) {
+          cardBack.scrollTop = 0;
+        }
+      }
+    });
     bindCard();
   }
 }
@@ -181,6 +208,15 @@ async function handleMastered() {
   await animateOut('left');
   if (hasNext.value) {
     currentIndex.value++;
+    // 重置卡片背面的滚动位置到顶部
+    nextTick(() => {
+      if (cardRef.value) {
+        const cardBack = cardRef.value.querySelector('.card-back');
+        if (cardBack) {
+          cardBack.scrollTop = 0;
+        }
+      }
+    });
     bindCard();
   }
 }
@@ -200,6 +236,15 @@ async function handleFavorite() {
   await animateOut('right');
   if (hasNext.value) {
     currentIndex.value++;
+    // 重置卡片背面的滚动位置到顶部
+    nextTick(() => {
+      if (cardRef.value) {
+        const cardBack = cardRef.value.querySelector('.card-back');
+        if (cardBack) {
+          cardBack.scrollTop = 0;
+        }
+      }
+    });
     bindCard();
   }
 }
