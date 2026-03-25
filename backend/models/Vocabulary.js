@@ -15,7 +15,6 @@ const vocabularySchema = new mongoose.Schema({
   partOfSpeech: {
     type: String,
     required: [true, '词性是必填项'],
-    enum: ['n.', 'v.', 'adj.', 'adv.', 'prep.', 'conj.', 'pron.', 'int.', 'phrase'],
     trim: true
   },
   definition: {
