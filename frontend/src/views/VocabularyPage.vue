@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { 
+import {
   getVocabulary, 
   addVocabulary, 
   updateVocabulary, 
@@ -11,9 +11,11 @@ import {
   getVocabularyStats
 } from '../api';
 import { useSpeech } from '../composables/useSpeech';
+import { useUi } from '../ui/service';
 import { parseVocabularyImport } from '../utils/vocabularyImport';
 
 const router = useRouter();
+const { confirm, toast } = useUi();
 
 // 状态
 const vocabularies = ref([]);
@@ -187,7 +189,7 @@ function closeModal() {
 // 提交表单
 async function handleSubmit() {
   if (!form.word || !form.phonetic || !form.definition || !form.translation) {
-    alert('请填写必填字段');
+    toast.warning('请填写必填字段');
     return;
   }
 
@@ -209,7 +211,7 @@ async function handleSubmit() {
     fetchStats();
   } catch (e) {
     console.error('保存失败:', e);
-    alert('保存失败: ' + (e.response?.data?.message || e.message));
+    toast.error('保存失败: ' + (e.response?.data?.message || e.message));
   }
 }
 
@@ -220,7 +222,7 @@ async function handleJsonSubmit() {
   try {
     const items = parseVocabularyImport(jsonInput.value);
     const res = await addVocabulary(items);
-    alert(res.message || `成功添加 ${items.length} 条词汇`);
+    toast.success(res.message || `成功添加 ${items.length} 条词汇`);
     closeModal();
     fetchVocabularies();
     fetchStats();
@@ -232,7 +234,15 @@ async function handleJsonSubmit() {
 
 // 删除词汇
 async function handleDelete(vocabulary) {
-  if (!confirm(`确定要删除 "${vocabulary.word}" 吗？`)) return;
+  const confirmed = await confirm({
+    title: '删除词汇',
+    message: `确定要删除 "${vocabulary.word}" 吗？此操作无法撤销。`,
+    confirmLabel: '删除',
+    cancelLabel: '取消',
+    tone: 'danger'
+  });
+
+  if (!confirmed) return;
   
   try {
     await deleteVocabulary(vocabulary._id);
@@ -240,7 +250,7 @@ async function handleDelete(vocabulary) {
     fetchStats();
   } catch (e) {
     console.error('删除失败:', e);
-    alert('删除失败');
+    toast.error('删除失败');
   }
 }
 
@@ -343,7 +353,7 @@ function playAudio(word) {
       volume: 1
     });
   } else {
-    alert('您的浏览器不支持语音播放功能');
+    toast.info('您的浏览器不支持语音播放功能');
   }
 }
 
