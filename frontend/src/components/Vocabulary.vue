@@ -57,6 +57,8 @@ const categoryOptions = [
   { value: 'business', label: '商务' },
   { value: 'academic', label: '学术' },
   { value: 'travel', label: '旅行' },
+  { value: 'science', label: '科学' },
+  { value: 'personality', label: '个性' },
   { value: 'other', label: '其他' }
 ];
 
