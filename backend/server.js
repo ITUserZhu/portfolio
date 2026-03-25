@@ -17,7 +17,7 @@ app.use(helmet());
 // CORS 白名单
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:5173', 'http://localhost:3000', 'http://107.173.231.168'];
+  : ['http://localhost:5174', 'http://localhost:3000', 'http://107.173.231.168'];
 app.use(cors({
   origin(origin, callback) {
     // 允许无 origin 的请求（如同源请求、curl）

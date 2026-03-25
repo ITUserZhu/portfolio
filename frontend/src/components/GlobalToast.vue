@@ -1,7 +1,7 @@
 <script setup>
 import { useUi } from '../ui/service';
 
-const ui = useUi();
+const { toasts, dismissToast } = useUi();
 
 const toneClasses = {
   success: 'alert-success',
@@ -14,7 +14,7 @@ const toneClasses = {
 <template>
   <div class="toast toast-top toast-end z-[80]">
     <div
-      v-for="toast in ui.toasts"
+      v-for="toast in toasts"
       :key="toast.id"
       class="alert min-w-[18rem] max-w-sm border shadow-lg"
       :class="toneClasses[toast.type] || toneClasses.info"
@@ -26,7 +26,7 @@ const toneClasses = {
           {{ toast.message }}
         </div>
       </div>
-      <button type="button" class="btn btn-ghost btn-xs" @click="ui.dismissToast(toast.id)">
+      <button type="button" class="btn btn-ghost btn-xs" @click="dismissToast(toast.id)">
         关闭
       </button>
     </div>

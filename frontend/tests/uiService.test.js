@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import { createUiService } from '../src/ui/service.js';
 
@@ -36,4 +37,11 @@ test('createUiService stores and removes toasts', () => {
 
   ui.dismissToast(toastId);
   assert.equal(ui.toasts.value.length, 0);
+});
+
+test('GlobalToast iterates over the unwrapped toast array', () => {
+  const source = readFileSync(new URL('../src/components/GlobalToast.vue', import.meta.url), 'utf8');
+
+  assert.match(source, /v-for="toast in toasts"/);
+  assert.doesNotMatch(source, /v-for="toast in ui\.toasts"/);
 });
