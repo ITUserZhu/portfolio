@@ -174,17 +174,34 @@ router.get('/vocabulary/:id', async (req, res) => {
 
 // ==================== 以下接口需要认证 ====================
 
-// 添加词汇
+// 添加词汇（支持单个对象或数组批量导入）
 router.post('/vocabulary', auth, async (req, res) => {
   try {
-    const { word, phonetic, partOfSpeech, definition, translation } = req.body;
-    if (!word || !phonetic || !partOfSpeech || !definition || !translation) {
-      return res.status(400).json({ status: 'error', message: '请填写所有必填字段' });
+    const items = Array.isArray(req.body) ? req.body : [req.body];
+    if (items.length === 0) {
+      return res.status(400).json({ status: 'error', message: '数据不能为空' });
     }
-    const vocabulary = await Vocabulary.create(req.body);
-    res.status(201).json({ status: 'success', data: vocabulary, message: '词汇添加成功' });
+    if (items.length > 200) {
+      return res.status(400).json({ status: 'error', message: '单次最多导入 200 条' });
+    }
+    // 校验每条数据的必填字段
+    for (let i = 0; i < items.length; i++) {
+      const { word, phonetic, partOfSpeech, definition, translation } = items[i];
+      if (!word || !phonetic || !partOfSpeech || !definition || !translation) {
+        return res.status(400).json({
+          status: 'error',
+          message: `第 ${i + 1} 条数据缺少必填字段（word/phonetic/partOfSpeech/definition/translation）`,
+        });
+      }
+    }
+    const result = await Vocabulary.insertMany(items, { ordered: false });
+    res.status(201).json({
+      status: 'success',
+      data: result,
+      message: `成功添加 ${result.length} 条词汇`,
+    });
   } catch {
-    res.status(400).json({ status: 'error', message: '添加失败，请检查输入' });
+    res.status(400).json({ status: 'error', message: '添加失败，请检查输入格式' });
   }
 });
 

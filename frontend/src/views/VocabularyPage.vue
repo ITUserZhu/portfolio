@@ -22,6 +22,9 @@ const showAddModal = ref(false);
 const showDetailModal = ref(false);
 const editingVocabulary = ref(null);
 const selectedVocabulary = ref(null);
+const jsonMode = ref(false);
+const jsonInput = ref('');
+const jsonError = ref('');
 
 // 语音播放
 const { isSpeaking, isSupported, speak, stop } = useSpeech();
@@ -174,6 +177,9 @@ function openEditModal(vocabulary) {
 // 关闭模态框
 function closeModal() {
   showAddModal.value = false;
+  jsonMode.value = false;
+  jsonInput.value = '';
+  jsonError.value = '';
   resetForm();
 }
 
@@ -203,6 +209,49 @@ async function handleSubmit() {
   } catch (e) {
     console.error('保存失败:', e);
     alert('保存失败: ' + (e.response?.data?.message || e.message));
+  }
+}
+
+// JSON 批量导入
+async function handleJsonSubmit() {
+  jsonError.value = '';
+  let parsed;
+  try {
+    // 尝试解析，支持带/不带引号的 key（先尝试标准 JSON，失败后尝试 JS 对象格式）
+    try {
+      parsed = JSON.parse(jsonInput.value);
+    } catch {
+      // 尝试用 Function 解析 JS 对象字面量（如无引号 key）
+      parsed = new Function('return (' + jsonInput.value + ')')();
+    }
+  } catch {
+    jsonError.value = 'JSON 格式错误，请检查输入';
+    return;
+  }
+
+  const items = Array.isArray(parsed) ? parsed : [parsed];
+  if (items.length === 0) {
+    jsonError.value = '数据不能为空';
+    return;
+  }
+
+  // 校验必填字段
+  for (let i = 0; i < items.length; i++) {
+    const { word, phonetic, partOfSpeech, definition, translation } = items[i];
+    if (!word || !phonetic || !partOfSpeech || !definition || !translation) {
+      jsonError.value = `第 ${i + 1} 条缺少必填字段（word/phonetic/partOfSpeech/definition/translation）`;
+      return;
+    }
+  }
+
+  try {
+    const res = await addVocabulary(items);
+    alert(res.message || `成功添加 ${items.length} 条词汇`);
+    closeModal();
+    fetchVocabularies();
+    fetchStats();
+  } catch (e) {
+    jsonError.value = e.response?.data?.message || '导入失败，请检查数据格式';
   }
 }
 
@@ -657,7 +706,77 @@ onMounted(() => {
             {{ editingVocabulary ? '编辑词汇' : '添加新词汇' }}
           </h3>
 
-          <form @submit.prevent="handleSubmit" class="space-y-6">
+          <!-- 输入模式切换（仅添加时显示） -->
+          <div v-if="!editingVocabulary" class="flex gap-3 mb-8">
+            <button
+              type="button"
+              @click="jsonMode = false"
+              class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300"
+              :class="!jsonMode ? 'text-white' : ''"
+              :style="!jsonMode
+                ? 'background: var(--ink-accent);'
+                : 'border: 1px solid var(--ink-border); color: var(--ink-text);'"
+            >表单输入</button>
+            <button
+              type="button"
+              @click="jsonMode = true"
+              class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300"
+              :class="jsonMode ? 'text-white' : ''"
+              :style="jsonMode
+                ? 'background: var(--ink-accent);'
+                : 'border: 1px solid var(--ink-border); color: var(--ink-text);'"
+            >JSON 导入</button>
+          </div>
+
+          <!-- JSON 输入模式 -->
+          <div v-if="jsonMode && !editingVocabulary">
+            <p class="text-xs mb-3 opacity-50">
+              支持单个对象 { ... } 或数组 [{ ... }, { ... }]，key 带不带引号均可
+            </p>
+            <textarea
+              v-model="jsonInput"
+              rows="16"
+              placeholder='[
+  {
+    "word": "hello",
+    "phonetic": "/həˈloʊ/",
+    "partOfSpeech": "int.",
+    "definition": "Used as a greeting",
+    "translation": "你好",
+    "difficulty": "beginner",
+    "category": "daily",
+    "phrases": [{ "phrase": "say hello", "translation": "打招呼" }],
+    "examples": [{ "sentence": "Hello!", "translation": "你好！" }]
+  }
+]'
+              class="w-full px-5 py-4 rounded-xl border text-sm outline-none font-mono
+                     transition-all duration-300 focus:border-[var(--ink-accent)] focus:shadow-lg resize-none"
+              style="background: var(--ink-bg); border-color: var(--ink-border);
+                     color: var(--ink-text);"
+            ></textarea>
+            <p v-if="jsonError" class="text-sm text-red-500 mt-3">{{ jsonError }}</p>
+
+            <div class="flex gap-4 pt-6">
+              <button
+                type="button"
+                @click="closeModal"
+                class="flex-1 py-4 rounded-xl font-medium text-sm border
+                       transition-all duration-300 hover:bg-[var(--ink-accent)]/10"
+                style="border-color: var(--ink-border); color: var(--ink-text);"
+              >取消</button>
+              <button
+                type="button"
+                @click="handleJsonSubmit"
+                :disabled="!jsonInput.trim()"
+                class="flex-1 py-4 rounded-xl font-bold text-sm
+                       transition-all duration-300 hover:shadow-xl hover:-translate-y-1
+                       disabled:opacity-40 disabled:cursor-not-allowed"
+                style="background: var(--ink-accent); color: var(--ink-bg);"
+              >导入</button>
+            </div>
+          </div>
+
+          <form v-else @submit.prevent="handleSubmit" class="space-y-6">
             <!-- Basic Info -->
             <div class="grid md:grid-cols-2 gap-6">
               <div>

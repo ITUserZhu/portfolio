@@ -31,7 +31,7 @@ app.use(cors({
 }));
 
 // 请求体大小限制
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '500kb' }));
 
 // 全局速率限制：每个 IP 每 15 分钟最多 200 次请求
 app.use('/api', rateLimit({
