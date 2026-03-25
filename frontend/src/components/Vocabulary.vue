@@ -9,6 +9,7 @@ import {
   toggleMastered,
   getVocabularyStats
 } from '../api';
+import AppSelect from './AppSelect.vue';
 import { useUi } from '../ui/service';
 
 const { confirm, toast } = useUi();
@@ -355,32 +356,26 @@ onMounted(() => {
           style="background: var(--ink-card-bg); border-color: var(--ink-border);
                  color: var(--ink-text); font-family: var(--font-body);"
         />
-        <select
+        <AppSelect
           v-model="selectedCategory"
           @change="handleFilter"
-          class="px-4 py-3 rounded-xl border text-sm outline-none cursor-pointer
-                 transition-all duration-300 focus:border-[var(--ink-accent)]"
-          style="background: var(--ink-card-bg); border-color: var(--ink-border);
-                 color: var(--ink-text); font-family: var(--font-body);"
+          class="min-w-[140px]"
         >
           <option value="">所有分类</option>
           <option v-for="opt in categoryOptions" :key="opt.value" :value="opt.value">
             {{ opt.label }}
           </option>
-        </select>
-        <select
+        </AppSelect>
+        <AppSelect
           v-model="selectedDifficulty"
           @change="handleFilter"
-          class="px-4 py-3 rounded-xl border text-sm outline-none cursor-pointer
-                 transition-all duration-300 focus:border-[var(--ink-accent)]"
-          style="background: var(--ink-card-bg); border-color: var(--ink-border);
-                 color: var(--ink-text); font-family: var(--font-body);"
+          class="min-w-[140px]"
         >
           <option value="">所有难度</option>
           <option v-for="opt in difficultyOptions" :key="opt.value" :value="opt.value">
             {{ opt.label }}
           </option>
-        </select>
+        </AppSelect>
         <button
           @click="showFavoritesOnly = !showFavoritesOnly; handleFilter()"
           class="px-4 py-3 rounded-xl border text-sm font-medium transition-all duration-300"
@@ -594,49 +589,43 @@ onMounted(() => {
                 <label class="block text-sm font-medium mb-2" style="color: var(--ink-text);">
                   词性
                 </label>
-                <select
+                <AppSelect
                   v-model="form.partOfSpeech"
-                  class="w-full px-4 py-3 rounded-xl border text-sm outline-none cursor-pointer
-                         transition-all duration-300 focus:border-[var(--ink-accent)]"
-                  style="background: var(--ink-bg); border-color: var(--ink-border);
-                         color: var(--ink-text);"
+                  surface="base"
+                  class="w-full"
                 >
                   <option v-for="pos in partOfSpeechOptions" :key="pos" :value="pos">
                     {{ pos }}
                   </option>
-                </select>
+                </AppSelect>
               </div>
               <div>
                 <label class="block text-sm font-medium mb-2" style="color: var(--ink-text);">
                   难度
                 </label>
-                <select
+                <AppSelect
                   v-model="form.difficulty"
-                  class="w-full px-4 py-3 rounded-xl border text-sm outline-none cursor-pointer
-                         transition-all duration-300 focus:border-[var(--ink-accent)]"
-                  style="background: var(--ink-bg); border-color: var(--ink-border);
-                         color: var(--ink-text);"
+                  surface="base"
+                  class="w-full"
                 >
                   <option v-for="opt in difficultyOptions" :key="opt.value" :value="opt.value">
                     {{ opt.label }}
                   </option>
-                </select>
+                </AppSelect>
               </div>
               <div>
                 <label class="block text-sm font-medium mb-2" style="color: var(--ink-text);">
                   分类
                 </label>
-                <select
+                <AppSelect
                   v-model="form.category"
-                  class="w-full px-4 py-3 rounded-xl border text-sm outline-none cursor-pointer
-                         transition-all duration-300 focus:border-[var(--ink-accent)]"
-                  style="background: var(--ink-bg); border-color: var(--ink-border);
-                         color: var(--ink-text);"
+                  surface="base"
+                  class="w-full"
                 >
                   <option v-for="opt in categoryOptions" :key="opt.value" :value="opt.value">
                     {{ opt.label }}
                   </option>
-                </select>
+                </AppSelect>
               </div>
             </div>
 

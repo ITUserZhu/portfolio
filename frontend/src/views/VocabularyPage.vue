@@ -11,11 +11,16 @@ import {
   getVocabularyStats
 } from '../api';
 import { useSpeech } from '../composables/useSpeech';
+import AppSelect from '../components/AppSelect.vue';
 import { useUi } from '../ui/service';
 import { parseVocabularyImport } from '../utils/vocabularyImport';
 
 const router = useRouter();
 const { confirm, toast } = useUi();
+const toolbarFieldClass = 'h-14 rounded-xl border text-sm font-medium shadow-sm transition-all duration-300 hover:shadow-lg focus:border-[var(--ink-accent)] focus:shadow-lg';
+const toolbarFilterButtonClass = 'h-14 px-5 rounded-xl border text-sm font-medium shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg';
+const toolbarPrimaryButtonClass = 'h-14 px-8 rounded-xl text-sm font-bold shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl';
+const toolbarSecondaryButtonClass = 'h-14 px-8 rounded-xl border text-sm font-bold shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl';
 
 // 状态
 const vocabularies = ref([]);
@@ -421,68 +426,57 @@ onMounted(() => {
             @input="handleSearch"
             type="text"
             placeholder="搜索单词..."
-            class="flex-1 min-w-[200px] px-5 py-4 rounded-xl border text-sm outline-none
-                   transition-all duration-300 focus:border-[var(--ink-accent)] focus:shadow-lg"
+            :class="['flex-1 min-w-[240px] px-5 outline-none', toolbarFieldClass]"
             style="background: var(--ink-card-bg); border-color: var(--ink-border);
                    color: var(--ink-text); font-family: var(--font-body);"
           />
-          <select
+          <AppSelect
             v-model="selectedCategory"
             @change="handleFilter"
-            class="px-5 py-4 rounded-xl border text-sm outline-none cursor-pointer
-                   transition-all duration-300 focus:border-[var(--ink-accent)]"
-            style="background: var(--ink-card-bg); border-color: var(--ink-border);
-                   color: var(--ink-text); font-family: var(--font-body);"
+            variant="toolbar"
+            class="min-w-[160px]"
           >
             <option value="">所有分类</option>
             <option v-for="opt in categoryOptions" :key="opt.value" :value="opt.value">
               {{ opt.label }}
             </option>
-          </select>
-          <select
+          </AppSelect>
+          <AppSelect
             v-model="selectedDifficulty"
             @change="handleFilter"
-            class="px-5 py-4 rounded-xl border text-sm outline-none cursor-pointer
-                   transition-all duration-300 focus:border-[var(--ink-accent)]"
-            style="background: var(--ink-card-bg); border-color: var(--ink-border);
-                   color: var(--ink-text); font-family: var(--font-body);"
+            variant="toolbar"
+            class="min-w-[160px]"
           >
             <option value="">所有难度</option>
             <option v-for="opt in difficultyOptions" :key="opt.value" :value="opt.value">
               {{ opt.label }}
             </option>
-          </select>
+          </AppSelect>
           <button
             @click="showFavoritesOnly = !showFavoritesOnly; handleFilter()"
-            class="px-5 py-4 rounded-xl border text-sm font-medium transition-all duration-300
-                   hover:shadow-lg"
-            :class="showFavoritesOnly ? 'bg-[var(--ink-accent)] text-[var(--ink-bg)]' : ''"
-            style="border-color: var(--ink-border); color: var(--ink-text);"
+            :class="[toolbarFilterButtonClass, showFavoritesOnly ? 'bg-[var(--ink-accent)] text-[var(--ink-bg)] border-transparent' : '']"
+            style="background: var(--ink-card-bg); border-color: var(--ink-border); color: var(--ink-text);"
           >
             ⭐ 收藏
           </button>
           <button
             @click="showMasteredOnly = !showMasteredOnly; handleFilter()"
-            class="px-5 py-4 rounded-xl border text-sm font-medium transition-all duration-300
-                   hover:shadow-lg"
-            :class="showMasteredOnly ? 'bg-[var(--ink-accent)] text-[var(--ink-bg)]' : ''"
-            style="border-color: var(--ink-border); color: var(--ink-text);"
+            :class="[toolbarFilterButtonClass, showMasteredOnly ? 'bg-[var(--ink-accent)] text-[var(--ink-bg)] border-transparent' : '']"
+            style="background: var(--ink-card-bg); border-color: var(--ink-border); color: var(--ink-text);"
           >
             ✓ 已掌握
           </button>
           <button
             @click="openAddModal"
-            class="px-8 py-4 rounded-xl text-sm font-bold transition-all duration-300
-                   hover:shadow-xl hover:-translate-y-1"
+            :class="toolbarPrimaryButtonClass"
             style="background: var(--ink-accent); color: var(--ink-bg);"
           >
             + 添加单词
           </button>
           <button
             @click="router.push('/vocabulary/memory')"
-            class="px-8 py-4 rounded-xl text-sm font-bold border-2 transition-all duration-300
-                   hover:shadow-xl hover:-translate-y-1"
-            style="border-color: var(--ink-accent); color: var(--ink-accent);"
+            :class="toolbarSecondaryButtonClass"
+            style="background: color-mix(in srgb, var(--ink-card-bg) 88%, var(--ink-accent) 12%); border-color: var(--ink-accent); color: var(--ink-accent);"
           >
             记忆模式
           </button>
@@ -800,49 +794,43 @@ onMounted(() => {
                 <label class="block text-sm font-medium mb-3" style="color: var(--ink-text);">
                   词性
                 </label>
-                <select
+                <AppSelect
                   v-model="form.partOfSpeech"
-                  class="w-full px-5 py-4 rounded-xl border text-sm outline-none cursor-pointer
-                         transition-all duration-300 focus:border-[var(--ink-accent)]"
-                  style="background: var(--ink-bg); border-color: var(--ink-border);
-                         color: var(--ink-text);"
+                  surface="base"
+                  class="w-full"
                 >
                   <option v-for="pos in partOfSpeechOptions" :key="pos" :value="pos">
                     {{ pos }}
                   </option>
-                </select>
+                </AppSelect>
               </div>
               <div>
                 <label class="block text-sm font-medium mb-3" style="color: var(--ink-text);">
                   难度
                 </label>
-                <select
+                <AppSelect
                   v-model="form.difficulty"
-                  class="w-full px-5 py-4 rounded-xl border text-sm outline-none cursor-pointer
-                         transition-all duration-300 focus:border-[var(--ink-accent)]"
-                  style="background: var(--ink-bg); border-color: var(--ink-border);
-                         color: var(--ink-text);"
+                  surface="base"
+                  class="w-full"
                 >
                   <option v-for="opt in difficultyOptions" :key="opt.value" :value="opt.value">
                     {{ opt.label }}
                   </option>
-                </select>
+                </AppSelect>
               </div>
               <div>
                 <label class="block text-sm font-medium mb-3" style="color: var(--ink-text);">
                   分类
                 </label>
-                <select
+                <AppSelect
                   v-model="form.category"
-                  class="w-full px-5 py-4 rounded-xl border text-sm outline-none cursor-pointer
-                         transition-all duration-300 focus:border-[var(--ink-accent)]"
-                  style="background: var(--ink-bg); border-color: var(--ink-border);
-                         color: var(--ink-text);"
+                  surface="base"
+                  class="w-full"
                 >
                   <option v-for="opt in categoryOptions" :key="opt.value" :value="opt.value">
                     {{ opt.label }}
                   </option>
-                </select>
+                </AppSelect>
               </div>
             </div>
 

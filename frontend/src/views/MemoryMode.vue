@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { getRandomBatch, toggleFavorite, toggleMastered } from '../api';
 import { useSpeech } from '../composables/useSpeech';
 import { useSwipe } from '../composables/useSwipe';
+import AppSelect from '../components/AppSelect.vue';
 
 const router = useRouter();
 const { isSpeaking, isSupported, speak } = useSpeech();
@@ -257,30 +258,26 @@ function categoryLabel(c) {
         <div class="space-y-5">
           <div>
             <label class="block text-sm font-medium mb-2 opacity-80">分类</label>
-            <select
+            <AppSelect
               v-model="selectedCategory"
-              class="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-all duration-300
-                     focus:border-[var(--ink-accent)]"
-              style="background: var(--ink-card); border-color: var(--ink-border); color: var(--ink-text);"
+              class="w-full"
             >
               <option v-for="opt in categoryOptions" :key="opt.value" :value="opt.value">
                 {{ opt.label }}
               </option>
-            </select>
+            </AppSelect>
           </div>
 
           <div>
             <label class="block text-sm font-medium mb-2 opacity-80">难度</label>
-            <select
+            <AppSelect
               v-model="selectedDifficulty"
-              class="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-all duration-300
-                     focus:border-[var(--ink-accent)]"
-              style="background: var(--ink-card); border-color: var(--ink-border); color: var(--ink-text);"
+              class="w-full"
             >
               <option v-for="opt in difficultyOptions" :key="opt.value" :value="opt.value">
                 {{ opt.label }}
               </option>
-            </select>
+            </AppSelect>
           </div>
 
           <label class="flex items-center gap-3 cursor-pointer">
