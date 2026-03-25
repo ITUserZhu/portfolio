@@ -63,7 +63,6 @@ function requireAdmin(req, res, next) {
 
 // 检查是否登录（任何已登录用户）
 function requireAuth(req, res, next) {
-  console.log(req.user)
   if (!req.user) {
     return res.status(401).json({ status: 'error', message: '请先登录' });
   }
