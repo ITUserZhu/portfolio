@@ -14,9 +14,11 @@ import { useSpeech } from '../composables/useSpeech';
 import AppSelect from '../components/AppSelect.vue';
 import { useUi } from '../ui/service';
 import { parseVocabularyImport } from '../utils/vocabularyImport';
+import { useAuthStore } from '../stores/auth';
 
 const router = useRouter();
 const { confirm, toast } = useUi();
+const auth = useAuthStore();
 const toolbarFieldClass = 'h-14 rounded-xl border text-sm font-medium shadow-sm transition-all duration-300 hover:shadow-lg focus:border-[var(--ink-accent)] focus:shadow-lg';
 const toolbarFilterButtonClass = 'h-14 px-5 rounded-xl border text-sm font-medium shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg';
 const toolbarPrimaryButtonClass = 'h-14 px-8 rounded-xl text-sm font-bold shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl';
@@ -261,6 +263,12 @@ async function handleDelete(vocabulary) {
 
 // 切换收藏
 async function handleToggleFavorite(vocabulary) {
+  if (!auth.isLoggedIn) {
+    toast.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+  
   try {
     const res = await toggleFavorite(vocabulary._id);
     // 只更新当前词汇的状态，不重新获取列表
@@ -278,6 +286,12 @@ async function handleToggleFavorite(vocabulary) {
 
 // 切换掌握状态
 async function handleToggleMastered(vocabulary) {
+  if (!auth.isLoggedIn) {
+    toast.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+  
   try {
     const res = await toggleMastered(vocabulary._id);
     // 只更新当前词汇的状态，不重新获取列表
@@ -466,13 +480,14 @@ onMounted(() => {
           >
             ✓ 已掌握
           </button>
-          <button
-            @click="openAddModal"
-            :class="toolbarPrimaryButtonClass"
-            style="background: var(--ink-accent); color: var(--ink-bg);"
-          >
-            + 添加单词
-          </button>
+        <button
+          v-if="auth.isAdmin"
+          @click="openAddModal"
+          :class="toolbarPrimaryButtonClass"
+          style="background: var(--ink-accent); color: var(--ink-bg);"
+        >
+          + 添加单词
+        </button>
           <button
             @click="router.push('/vocabulary/memory')"
             :class="toolbarSecondaryButtonClass"

@@ -25,7 +25,7 @@ router.post('/register', async (req, res) => {
     }
 
     const user = await User.create({ username, password });
-    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id, username: user.username, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: '30d',
     });
 
@@ -49,7 +49,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ status: 'error', message: '用户名或密码错误' });
     }
 
-    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id, username: user.username, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: '30d',
     });
 
@@ -60,7 +60,7 @@ router.post('/login', async (req, res) => {
 });
 
 // 获取当前用户信息（需认证）
-router.get('/me', require('../middleware/auth'), async (req, res) => {
+router.get('/me', require('../middleware/auth').auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) {

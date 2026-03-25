@@ -15,6 +15,28 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 6,
   },
+  role: {
+    type: String,
+    enum: ['guest', 'user', 'admin'],
+    default: 'user',
+  },
+  email: {
+    type: String,
+    sparse: true,
+    trim: true,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  favorites: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Vocabulary',
+  }],
+  mastered: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Vocabulary',
+  }],
 }, {
   timestamps: true,
 });

@@ -1,8 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useThemeStore } from '../stores/theme';
+import { useAuthStore } from '../stores/auth';
 
 const theme = useThemeStore();
+const auth = useAuthStore();
 const scrolled = ref(false);
 const mobileOpen = ref(false);
 
@@ -81,6 +83,26 @@ onMounted(() => {
       </div>
 
       <div class="flex items-center gap-3">
+        <!-- Auth Button -->
+        <button
+          v-if="auth.isLoggedIn"
+          @click="auth.logout()"
+          class="hidden md:block px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300
+                 hover:bg-red-500/10 hover:text-red-400"
+          style="color: var(--ink-text-muted); border: 1px solid var(--ink-border);"
+        >
+          退出
+        </button>
+        <button
+          v-else
+          @click="router.push('/login')"
+          class="hidden md:block px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300
+                 hover:bg-[var(--ink-accent)]/10"
+          style="color: var(--ink-accent); border: 1px solid var(--ink-accent);"
+        >
+          登录
+        </button>
+
         <!-- Theme Toggle -->
         <button
           @click="theme.toggle()"
@@ -143,6 +165,26 @@ onMounted(() => {
         >
           {{ link.label }}
         </a>
+        <!-- Mobile Auth Button -->
+        <div class="border-t border-[var(--ink-border)] mt-2 pt-2">
+          <button
+            v-if="auth.isLoggedIn"
+            @click="auth.logout(); mobileOpen = false"
+            class="block w-full text-left px-6 py-3 text-base font-medium transition-colors cursor-pointer
+                   hover:text-red-400"
+            style="color: var(--ink-text-muted);"
+          >
+            退出登录
+          </button>
+          <button
+            v-else
+            @click="router.push('/login'); mobileOpen = false"
+            class="block w-full text-left px-6 py-3 text-base font-medium transition-colors cursor-pointer"
+            style="color: var(--ink-accent);"
+          >
+            登录
+          </button>
+        </div>
       </div>
     </transition>
   </nav>

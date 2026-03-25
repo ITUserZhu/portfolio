@@ -60,13 +60,35 @@ const vocabularySchema = new mongoose.Schema({
     type: String,
     default: 'daily'
   },
-  isFavorite: {
-    type: Boolean,
-    default: false
+  // 用户特定数据
+  userStats: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    isFavorite: {
+      type: Boolean,
+      default: false
+    },
+    isMastered: {
+      type: Boolean,
+      default: false
+    },
+    lastReviewed: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  // 创建者信息
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
-  isMastered: {
+  // 是否公开（管理员创建的词汇默认公开）
+  isPublic: {
     type: Boolean,
-    default: false
+    default: true
   },
   audioUrl: {
     type: String,
@@ -78,5 +100,10 @@ const vocabularySchema = new mongoose.Schema({
 
 // 创建文本索引以支持搜索
 vocabularySchema.index({ word: 'text', translation: 'text', definition: 'text' });
+
+// 索引优化
+vocabularySchema.index({ 'userStats.user': 1 });
+vocabularySchema.index({ createdBy: 1 });
+vocabularySchema.index({ isPublic: 1 });
 
 module.exports = mongoose.model('Vocabulary', vocabularySchema);

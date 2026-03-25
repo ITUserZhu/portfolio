@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
+const { optionalAuth, requireAuth, requireAdmin } = require('../middleware/auth');
 const Profile = require('../models/Profile');
 const Skill = require('../models/Skill');
 const Project = require('../models/Project');
@@ -81,8 +81,8 @@ router.get('/health', (req, res) => {
 
 // ==================== 词汇 API ====================
 
-// 获取词汇列表（公开读取）
-router.get('/vocabulary', async (req, res) => {
+// 获取词汇列表（公开读取）- 游客可访问
+router.get('/vocabulary', optionalAuth, async (req, res) => {
   try {
     const { search, category, difficulty, isFavorite, isMastered } = req.query;
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -120,7 +120,7 @@ router.get('/vocabulary', async (req, res) => {
 });
 
 // 随机批量获取词汇（记忆模式，公开）— 必须在 /:id 之前
-router.get('/vocabulary/random-batch', async (req, res) => {
+router.get('/vocabulary/random-batch', optionalAuth, async (req, res) => {
   try {
     const size = Math.min(100, Math.max(1, parseInt(req.query.size) || 30));
     const { category, difficulty, excludeMastered } = req.query;
@@ -140,8 +140,8 @@ router.get('/vocabulary/random-batch', async (req, res) => {
   }
 });
 
-// 词汇统计（公开）
-router.get('/vocabulary-stats', async (req, res) => {
+// 词汇统计（公开）- 游客可访问
+router.get('/vocabulary-stats', optionalAuth, async (req, res) => {
   try {
     const [total, mastered, favorites, byCategory, byDifficulty] = await Promise.all([
       Vocabulary.countDocuments(),
@@ -165,8 +165,8 @@ router.get('/vocabulary-stats', async (req, res) => {
   }
 });
 
-// 获取单个词汇（公开）
-router.get('/vocabulary/:id', async (req, res) => {
+// 获取单个词汇（公开）- 游客可访问
+router.get('/vocabulary/:id', optionalAuth, async (req, res) => {
   try {
     const vocabulary = await Vocabulary.findById(req.params.id);
     if (!vocabulary) return res.status(404).json({ status: 'error', message: '词汇不存在' });
@@ -178,8 +178,8 @@ router.get('/vocabulary/:id', async (req, res) => {
 
 // ==================== 以下接口需要认证 ====================
 
-// 添加词汇（支持单个对象或数组批量导入）
-router.post('/vocabulary', auth, async (req, res) => {
+// 添加词汇（支持单个对象或数组批量导入）- 仅管理员
+router.post('/vocabulary', requireAdmin, async (req, res) => {
   try {
     const items = Array.isArray(req.body) ? req.body : [req.body];
     if (items.length === 0) {
@@ -240,8 +240,8 @@ router.post('/vocabulary', auth, async (req, res) => {
   }
 });
 
-// 更新词汇
-router.put('/vocabulary/:id', auth, async (req, res) => {
+// 更新词汇 - 仅管理员
+router.put('/vocabulary/:id', requireAdmin, async (req, res) => {
   try {
     const vocabulary = await Vocabulary.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -254,8 +254,8 @@ router.put('/vocabulary/:id', auth, async (req, res) => {
   }
 });
 
-// 删除词汇
-router.delete('/vocabulary/:id', auth, async (req, res) => {
+// 删除词汇 - 仅管理员
+router.delete('/vocabulary/:id', requireAdmin, async (req, res) => {
   try {
     const vocabulary = await Vocabulary.findByIdAndDelete(req.params.id);
     if (!vocabulary) return res.status(404).json({ status: 'error', message: '词汇不存在' });
@@ -265,8 +265,8 @@ router.delete('/vocabulary/:id', auth, async (req, res) => {
   }
 });
 
-// 切换收藏状态
-router.patch('/vocabulary/:id/favorite', auth, async (req, res) => {
+// 切换收藏状态 - 需要登录
+router.patch('/vocabulary/:id/favorite', requireAuth, async (req, res) => {
   try {
     const vocabulary = await Vocabulary.findById(req.params.id);
     if (!vocabulary) return res.status(404).json({ status: 'error', message: '词汇不存在' });
@@ -282,8 +282,8 @@ router.patch('/vocabulary/:id/favorite', auth, async (req, res) => {
   }
 });
 
-// 切换掌握状态
-router.patch('/vocabulary/:id/mastered', auth, async (req, res) => {
+// 切换掌握状态 - 需要登录
+router.patch('/vocabulary/:id/mastered', requireAuth, async (req, res) => {
   try {
     const vocabulary = await Vocabulary.findById(req.params.id);
     if (!vocabulary) return res.status(404).json({ status: 'error', message: '词汇不存在' });

@@ -21,8 +21,7 @@ const routes = [
   {
     path: '/vocabulary',
     name: 'Vocabulary',
-    component: VocabularyPage,
-    meta: { requiresAuth: true }
+    component: VocabularyPage
   },
   {
     path: '/vocabulary/memory',

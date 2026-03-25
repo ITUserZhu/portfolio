@@ -10,6 +10,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   const hasToken = computed(() => !!token.value);
   const isLoggedIn = computed(() => hasToken.value && !!user.value);
+  const isAdmin = computed(() => user.value?.role === 'admin');
+  const isUser = computed(() => user.value?.role === 'user');
+  const userRole = computed(() => user.value?.role || 'guest');
 
   // 设置 token 并持久化
   function setToken(t) {
@@ -71,5 +74,17 @@ export const useAuthStore = defineStore('auth', () => {
     return res.data.user;
   }
 
-  return { token, user, initialized, hasToken, isLoggedIn, init, login, clearAuth };
+  return { 
+    token, 
+    user, 
+    initialized, 
+    hasToken, 
+    isLoggedIn,
+    isAdmin,
+    isUser,
+    userRole,
+    init, 
+    login, 
+    clearAuth 
+  };
 });

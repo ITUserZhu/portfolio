@@ -19,7 +19,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res.data,
   (err) => {
-    if (err.response?.status === 401) {
+    // 只有在已登录状态下遇到 401 才跳转登录页
+    const token = localStorage.getItem('auth_token');
+    if (err.response?.status === 401 && token) {
       localStorage.removeItem('auth_token');
       // 避免在登录页重复跳转
       if (window.location.pathname !== '/login') {
@@ -35,6 +37,11 @@ export const getSkills = () => api.get('/skills');
 export const getProjects = (featured) =>
   api.get('/projects', { params: { featured } });
 export const submitContact = (data) => api.post('/contact', data);
+
+// 认证 API
+export const login = (data) => api.post('/auth/login', data);
+export const register = (data) => api.post('/auth/register', data);
+export const getMe = () => api.get('/auth/me');
 
 // 词汇 API
 export const getVocabulary = (params) => api.get('/vocabulary', { params });
