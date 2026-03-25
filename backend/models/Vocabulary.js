@@ -59,7 +59,7 @@ const vocabularySchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['daily', 'tech', 'business', 'academic', 'travel', 'other', 'science'],
+    enum: ['daily', 'tech', 'business', 'academic', 'travel', 'other', 'science', 'personality'],
     default: 'daily'
   },
   isFavorite: {
