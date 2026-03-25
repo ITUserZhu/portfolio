@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/Home.vue';
 import VocabularyPage from '../views/VocabularyPage.vue';
+import MemoryMode from '../views/MemoryMode.vue';
 
 const routes = [
   {
@@ -12,6 +13,11 @@ const routes = [
     path: '/vocabulary',
     name: 'Vocabulary',
     component: VocabularyPage
+  },
+  {
+    path: '/vocabulary/memory',
+    name: 'MemoryMode',
+    component: MemoryMode
   }
 ];
 

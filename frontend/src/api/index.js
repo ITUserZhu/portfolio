@@ -29,5 +29,6 @@ export const deleteVocabulary = (id) => api.delete(`/vocabulary/${id}`);
 export const toggleFavorite = (id) => api.patch(`/vocabulary/${id}/favorite`);
 export const toggleMastered = (id) => api.patch(`/vocabulary/${id}/mastered`);
 export const getVocabularyStats = () => api.get('/vocabulary-stats');
+export const getRandomBatch = (params) => api.get('/vocabulary/random-batch', { params });
 
 export default api;

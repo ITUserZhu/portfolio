@@ -1,5 +1,6 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { 
   getVocabulary, 
   addVocabulary, 
@@ -10,6 +11,8 @@ import {
   getVocabularyStats
 } from '../api';
 import { useSpeech } from '../composables/useSpeech';
+
+const router = useRouter();
 
 // 状态
 const vocabularies = ref([]);
@@ -429,6 +432,14 @@ onMounted(() => {
             style="background: var(--ink-accent); color: var(--ink-bg);"
           >
             + 添加单词
+          </button>
+          <button
+            @click="router.push('/vocabulary/memory')"
+            class="px-8 py-4 rounded-xl text-sm font-bold border-2 transition-all duration-300
+                   hover:shadow-xl hover:-translate-y-1"
+            style="border-color: var(--ink-accent); color: var(--ink-accent);"
+          >
+            记忆模式
           </button>
         </div>
       </div>

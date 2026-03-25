@@ -111,6 +111,35 @@ router.get('/vocabulary', async (req, res) => {
   }
 });
 
+// 随机批量获取词汇（记忆模式）— 必须在 /:id 之前
+router.get('/vocabulary/random-batch', async (req, res) => {
+  try {
+    const { size = 30, category, difficulty, excludeMastered } = req.query;
+    const match = {};
+    if (category) match.category = category;
+    if (difficulty) match.difficulty = difficulty;
+    if (excludeMastered === 'true') match.isMastered = false;
+
+    const pipeline = [];
+    if (Object.keys(match).length > 0) {
+      pipeline.push({ $match: match });
+    }
+    pipeline.push({ $sample: { size: parseInt(size) } });
+
+    const vocabularies = await Vocabulary.aggregate(pipeline);
+    res.json({
+      status: 'success',
+      data: vocabularies,
+      total: vocabularies.length
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'error',
+      message: err.message
+    });
+  }
+});
+
 // 获取单个词汇
 router.get('/vocabulary/:id', async (req, res) => {
   try {
