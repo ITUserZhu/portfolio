@@ -3,6 +3,9 @@ import Home from '../views/Home.vue';
 import VocabularyPage from '../views/VocabularyPage.vue';
 import MemoryMode from '../views/MemoryMode.vue';
 import LoginPage from '../views/LoginPage.vue';
+import { useAuthStore } from '../stores/auth';
+import { pinia } from '../stores/pinia';
+import { resolveProtectedNavigation } from '../utils/authSession';
 
 const routes = [
   {
@@ -46,13 +49,18 @@ const router = createRouter({
   }
 });
 
-// 路由守卫：需要认证的页面自动跳转登录
-router.beforeEach((to) => {
-  if (to.meta.requiresAuth) {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      return { name: 'Login' };
-    }
+// 路由守卫：进入受保护页面前先确认本地 token 仍然有效
+router.beforeEach(async (to) => {
+  const auth = useAuthStore(pinia);
+  const redirect = await resolveProtectedNavigation({
+    requiresAuth: !!to.meta.requiresAuth,
+    hasToken: auth.hasToken,
+    isValidated: auth.initialized,
+    validateSession: () => auth.init(),
+  });
+
+  if (redirect) {
+    return redirect;
   }
 });
 

@@ -11,6 +11,7 @@ import {
   getVocabularyStats
 } from '../api';
 import { useSpeech } from '../composables/useSpeech';
+import { parseVocabularyImport } from '../utils/vocabularyImport';
 
 const router = useRouter();
 
@@ -215,43 +216,17 @@ async function handleSubmit() {
 // JSON 批量导入
 async function handleJsonSubmit() {
   jsonError.value = '';
-  let parsed;
-  try {
-    // 尝试解析，支持带/不带引号的 key（先尝试标准 JSON，失败后尝试 JS 对象格式）
-    try {
-      parsed = JSON.parse(jsonInput.value);
-    } catch {
-      // 尝试用 Function 解析 JS 对象字面量（如无引号 key）
-      parsed = new Function('return (' + jsonInput.value + ')')();
-    }
-  } catch {
-    jsonError.value = 'JSON 格式错误，请检查输入';
-    return;
-  }
-
-  const items = Array.isArray(parsed) ? parsed : [parsed];
-  if (items.length === 0) {
-    jsonError.value = '数据不能为空';
-    return;
-  }
-
-  // 校验必填字段
-  for (let i = 0; i < items.length; i++) {
-    const { word, phonetic, partOfSpeech, definition, translation } = items[i];
-    if (!word || !phonetic || !partOfSpeech || !definition || !translation) {
-      jsonError.value = `第 ${i + 1} 条缺少必填字段（word/phonetic/partOfSpeech/definition/translation）`;
-      return;
-    }
-  }
 
   try {
+    const items = parseVocabularyImport(jsonInput.value);
     const res = await addVocabulary(items);
     alert(res.message || `成功添加 ${items.length} 条词汇`);
     closeModal();
     fetchVocabularies();
     fetchStats();
   } catch (e) {
-    jsonError.value = e.response?.data?.message || '导入失败，请检查数据格式';
+    jsonError.value = e.response?.data?.message || e.message || '导入失败，请检查数据格式';
+    return;
   }
 }
 
@@ -731,7 +706,7 @@ onMounted(() => {
           <!-- JSON 输入模式 -->
           <div v-if="jsonMode && !editingVocabulary">
             <p class="text-xs mb-3 opacity-50">
-              支持单个对象 { ... } 或数组 [{ ... }, { ... }]，key 带不带引号均可
+              只支持严格 JSON：单个对象 { ... } 或数组 [{ ... }, { ... }]，key 和字符串都需要双引号
             </p>
             <textarea
               v-model="jsonInput"
