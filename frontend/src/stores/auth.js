@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import api from '../api';
+import api from '../api/index.js';
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('auth_token') || '');
@@ -29,6 +29,10 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('auth_token');
     delete api.defaults.headers.common['Authorization'];
     initialized.value = true;
+  }
+
+  function logout() {
+    clearAuth();
   }
 
   // 初始化：从 localStorage 恢复 token 并验证
@@ -85,6 +89,7 @@ export const useAuthStore = defineStore('auth', () => {
     userRole,
     init, 
     login, 
-    clearAuth 
+    clearAuth,
+    logout,
   };
 });

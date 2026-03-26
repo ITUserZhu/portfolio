@@ -2,12 +2,14 @@
 import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useThemeStore } from './stores/theme';
+import { useAuthStore } from './stores/auth';
 import Navbar from './components/Navbar.vue';
 import FooterSection from './components/Footer.vue';
 import GlobalDialog from './components/GlobalDialog.vue';
 import GlobalToast from './components/GlobalToast.vue';
 
 const theme = useThemeStore();
+const auth = useAuthStore();
 const route = useRoute();
 
 const showLayout = computed(() =>
@@ -16,6 +18,7 @@ const showLayout = computed(() =>
 
 onMounted(() => {
   theme.init();
+  auth.init();
 });
 </script>
 

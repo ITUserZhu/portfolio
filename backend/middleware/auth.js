@@ -9,12 +9,7 @@ function auth(req, res, next) {
 
   try {
     const token = header.split(' ')[1];
-    console.log('验证token:', token.substring(0, 20) + '...');
-    console.log('JWT_SECRET:', process.env.JWT_SECRET ? '已设置' : '未设置');
-    
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('解码后的用户信息:', decoded);
-    
     req.user = decoded;
     next();
   } catch (error) {

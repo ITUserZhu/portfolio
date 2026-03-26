@@ -149,11 +149,11 @@ body {
 }
 
 /* ─── Theme Transition ─── */
-* {
+/* * {
   transition-property: background-color, border-color, color;
   transition-duration: 0.3s;
   transition-timing-function: ease;
-}
+} */
 
 /* Exclude elements that have their own transition for transform/opacity */
 .reveal, .stagger-children > *, .skill-bar-fill {

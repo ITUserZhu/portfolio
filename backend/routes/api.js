@@ -10,6 +10,7 @@ const {
   normalizeVocabularyWord,
   filterDuplicateVocabularyItems,
 } = require('../utils/vocabularyDedup');
+const { buildVocabularyFilter } = require('../utils/vocabularyQuery');
 
 // 转义正则特殊字符，防止 NoSQL 注入
 function escapeRegex(str) {
@@ -87,45 +88,32 @@ router.get('/vocabulary', optionalAuth, async (req, res) => {
     const { search, category, difficulty, isFavorite, isMastered } = req.query;
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
-    const filter = {};
+    let user = null;
+    let favoriteIds = [];
+    let masteredIds = [];
 
-    if (search) {
-      const safe = escapeRegex(String(search).slice(0, 100));
-      filter.$or = [
-        { word: { $regex: safe, $options: 'i' } },
-        { translation: { $regex: safe, $options: 'i' } },
-        { definition: { $regex: safe, $options: 'i' } },
-      ];
+    if (req.user) {
+      const User = require('../models/User');
+      user = await User.findById(req.user.id).select('favorites mastered');
+      favoriteIds = user?.favorites.map((id) => String(id)) ?? [];
+      masteredIds = user?.mastered.map((id) => String(id)) ?? [];
     }
 
-    if (category) filter.category = String(category);
-    if (difficulty) filter.difficulty = String(difficulty);
+    const filter = buildVocabularyFilter(
+      { search, category, difficulty, isFavorite, isMastered },
+      { favoriteIds, masteredIds }
+    );
 
     const skip = (page - 1) * limit;
     let vocabularies = await Vocabulary.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit);
     const total = await Vocabulary.countDocuments(filter);
 
-    // 如果用户已登录，获取用户的收藏和掌握状态
-    if (req.user) {
-      const User = require('../models/User');
-      const user = await User.findById(req.user.id);
-      if (user) {
-        vocabularies = vocabularies.map(vocab => {
-          const vocabObj = vocab.toObject();
-          vocabObj.isFavorite = user.favorites.includes(vocab._id);
-          vocabObj.isMastered = user.mastered.includes(vocab._id);
-          return vocabObj;
-        });
-      }
-    }
-
-    // 应用筛选
-    if (isFavorite !== undefined) {
-      vocabularies = vocabularies.filter(v => v.isFavorite === (isFavorite === 'true'));
-    }
-    if (isMastered !== undefined) {
-      vocabularies = vocabularies.filter(v => v.isMastered === (isMastered === 'true'));
-    }
+    vocabularies = vocabularies.map((vocab) => {
+      const vocabObj = vocab.toObject();
+      vocabObj.isFavorite = favoriteIds.includes(String(vocab._id));
+      vocabObj.isMastered = masteredIds.includes(String(vocab._id));
+      return vocabObj;
+    });
 
     res.json({
       status: 'success',

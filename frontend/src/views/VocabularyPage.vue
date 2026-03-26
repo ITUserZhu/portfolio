@@ -95,6 +95,12 @@ const visiblePages = computed(() => {
   return pages;
 });
 
+function getFilterButtonStyle(isActive) {
+  return isActive
+    ? 'background: var(--ink-accent); border-color: transparent; color: var(--ink-bg);'
+    : 'background: var(--ink-card-bg); border-color: var(--ink-border); color: var(--ink-text);';
+}
+
 // 获取词汇列表
 async function fetchVocabularies() {
   loading.value = true;
@@ -468,15 +474,15 @@ onMounted(() => {
           </AppSelect>
           <button
             @click="showFavoritesOnly = !showFavoritesOnly; handleFilter()"
-            :class="[toolbarFilterButtonClass, showFavoritesOnly ? 'bg-[var(--ink-accent)] text-[var(--ink-bg)] border-transparent' : '']"
-            style="background: var(--ink-card-bg); border-color: var(--ink-border); color: var(--ink-text);"
+            :class="toolbarFilterButtonClass"
+            :style="getFilterButtonStyle(showFavoritesOnly)"
           >
             ⭐ 收藏
           </button>
           <button
             @click="showMasteredOnly = !showMasteredOnly; handleFilter()"
-            :class="[toolbarFilterButtonClass, showMasteredOnly ? 'bg-[var(--ink-accent)] text-[var(--ink-bg)] border-transparent' : '']"
-            style="background: var(--ink-card-bg); border-color: var(--ink-border); color: var(--ink-text);"
+            :class="toolbarFilterButtonClass"
+            :style="getFilterButtonStyle(showMasteredOnly)"
           >
             ✓ 已掌握
           </button>
@@ -512,6 +518,7 @@ onMounted(() => {
           <p class="text-2xl font-bold mb-4" style="color: var(--ink-text-muted);">暂无词汇</p>
           <p class="mb-8" style="color: var(--ink-text-muted);">开始添加你的第一个单词吧！</p>
           <button
+            v-if="auth.isAdmin"
             @click="openAddModal"
             class="px-8 py-4 rounded-xl text-sm font-bold transition-all duration-300
                    hover:shadow-xl hover:-translate-y-1"
@@ -606,7 +613,10 @@ onMounted(() => {
                   {{ vocabulary.isMastered ? '✓' : '○' }}
                 </button>
               </div>
-              <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div
+                v-if="auth.isAdmin"
+                class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              >
                 <button
                   @click.stop="openEditModal(vocabulary)"
                   class="p-2 rounded-lg bg-[var(--ink-accent)]/10 hover:bg-[var(--ink-accent)]/20
