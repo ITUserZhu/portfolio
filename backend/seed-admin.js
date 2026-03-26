@@ -16,7 +16,7 @@ async function seedAdmin() {
     }
 
     // 检查是否存在 admin 用户
-    const existingUser = await User.findOne({ username: 'admin' });
+    const existingUser = await User.findOne({ username: process.env.ADMIN_USER || 'admin'});
     if (existingUser) {
       // 如果存在 admin 用户，更新其角色为管理员
       existingUser.role = 'admin';
@@ -28,15 +28,15 @@ async function seedAdmin() {
     } else {
       // 创建管理员账号
       const admin = await User.create({
-        username: 'admin',
-        password: 'admin123', // 默认密码，建议用户首次登录后修改
+        username: process.env.ADMIN_USER || 'admin',
+        password:  process.env.ADMIN_PASS ||'admin123', // 默认密码，建议用户首次登录后修改
         role: 'admin',
         email: 'admin@portfolio.com'
       });
 
       console.log('✅ 管理员账号创建成功');
       console.log('   用户名:', admin.username);
-      console.log('   密码: admin123');
+      console.log('   密码: ', admin.password);
       console.log('   角色:', admin.role);
       console.log('\n⚠️  请务必在首次登录后修改默认密码！');
     }
