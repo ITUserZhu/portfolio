@@ -409,33 +409,33 @@ onMounted(() => {
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-3 gap-6 mb-12">
+        <div class="grid grid-cols-1 gap-4 mb-12 sm:grid-cols-3 sm:gap-6">
           <div
-            class="p-8 rounded-2xl border text-center transition-all duration-300 hover:shadow-xl"
+            class="min-w-0 p-5 rounded-2xl border text-center transition-all duration-300 hover:shadow-xl sm:p-8"
             style="background: var(--ink-card-bg); border-color: var(--ink-border);"
           >
-            <div class="text-4xl font-bold mb-3" style="color: var(--ink-accent);">
+            <div class="min-w-0 mb-2 text-3xl font-bold leading-none break-all sm:mb-3 sm:text-4xl" style="color: var(--ink-accent);">
               {{ stats.total }}
             </div>
-            <div class="text-sm font-medium" style="color: var(--ink-text-muted);">总词汇</div>
+            <div class="text-xs font-medium sm:text-sm" style="color: var(--ink-text-muted);">总词汇</div>
           </div>
           <div
-            class="p-8 rounded-2xl border text-center transition-all duration-300 hover:shadow-xl"
+            class="min-w-0 p-5 rounded-2xl border text-center transition-all duration-300 hover:shadow-xl sm:p-8"
             style="background: var(--ink-card-bg); border-color: var(--ink-border);"
           >
-            <div class="text-4xl font-bold mb-3" style="color: var(--ink-accent);">
+            <div class="min-w-0 mb-2 text-3xl font-bold leading-none break-all sm:mb-3 sm:text-4xl" style="color: var(--ink-accent);">
               {{ stats.mastered }}
             </div>
-            <div class="text-sm font-medium" style="color: var(--ink-text-muted);">已掌握</div>
+            <div class="text-xs font-medium sm:text-sm" style="color: var(--ink-text-muted);">已掌握</div>
           </div>
           <div
-            class="p-8 rounded-2xl border text-center transition-all duration-300 hover:shadow-xl"
+            class="min-w-0 p-5 rounded-2xl border text-center transition-all duration-300 hover:shadow-xl sm:p-8"
             style="background: var(--ink-card-bg); border-color: var(--ink-border);"
           >
-            <div class="text-4xl font-bold mb-3" style="color: var(--ink-accent);">
+            <div class="min-w-0 mb-2 text-3xl font-bold leading-none break-all sm:mb-3 sm:text-4xl" style="color: var(--ink-accent);">
               {{ stats.favorites }}
             </div>
-            <div class="text-sm font-medium" style="color: var(--ink-text-muted);">收藏</div>
+            <div class="text-xs font-medium sm:text-sm" style="color: var(--ink-text-muted);">收藏</div>
           </div>
         </div>
 
