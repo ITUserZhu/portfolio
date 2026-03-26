@@ -7,13 +7,15 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
     trim: true,
+    lowercase: true,
     minlength: 3,
     maxlength: 30,
+    match: /^[a-z0-9_-]{3,30}$/,
   },
   password: {
     type: String,
     required: true,
-    minlength: 6,
+    minlength: 8,
   },
   role: {
     type: String,

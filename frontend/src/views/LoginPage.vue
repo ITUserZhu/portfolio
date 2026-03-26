@@ -11,6 +11,7 @@ const username = ref('');
 const password = ref('');
 const confirmPassword = ref('');
 const error = ref('');
+const success = ref('');
 const loading = ref(false);
 const checking = ref(true);
 const isRegisterMode = ref(false);
@@ -26,6 +27,7 @@ onMounted(async () => {
 
 async function handleLogin() {
   error.value = '';
+  success.value = '';
   loading.value = true;
   try {
     await auth.login(username.value, password.value);
@@ -39,23 +41,30 @@ async function handleLogin() {
 
 async function handleRegister() {
   error.value = '';
+  success.value = '';
   
   if (password.value !== confirmPassword.value) {
     error.value = '两次输入的密码不一致';
     return;
   }
   
-  if (password.value.length < 6) {
-    error.value = '密码至少6个字符';
+  if (password.value.length < 8) {
+    error.value = '密码至少 8 个字符';
+    return;
+  }
+
+  if (!/[A-Za-z]/.test(password.value) || !/\d/.test(password.value)) {
+    error.value = '密码需同时包含字母和数字';
     return;
   }
   
   loading.value = true;
   try {
     await register({ username: username.value, password: password.value });
-    // 注册成功后自动登录
-    await auth.login(username.value, password.value);
-    router.replace('/vocabulary');
+    success.value = '注册成功，请登录';
+    isRegisterMode.value = false;
+    password.value = '';
+    confirmPassword.value = '';
   } catch (err) {
     error.value = err.response?.data?.message || '注册失败，请重试';
   } finally {
@@ -66,6 +75,7 @@ async function handleRegister() {
 function toggleMode() {
   isRegisterMode.value = !isRegisterMode.value;
   error.value = '';
+  success.value = '';
   username.value = '';
   password.value = '';
   confirmPassword.value = '';
@@ -132,6 +142,7 @@ function toggleMode() {
           />
         </div>
 
+        <p v-if="success" class="text-sm text-green-500 text-center">{{ success }}</p>
         <p v-if="error" class="text-sm text-red-500 text-center">{{ error }}</p>
 
         <button
