@@ -10,7 +10,7 @@ const {
   normalizeVocabularyWord,
   filterDuplicateVocabularyItems,
 } = require('../utils/vocabularyDedup');
-const { buildVocabularyFilter } = require('../utils/vocabularyQuery');
+const { buildVocabularyFilter, buildRandomBatchMatch } = require('../utils/vocabularyQuery');
 
 // 转义正则特殊字符，防止 NoSQL 注入
 function escapeRegex(str) {
@@ -129,11 +129,7 @@ router.get('/vocabulary', optionalAuth, async (req, res) => {
 router.get('/vocabulary/random-batch', optionalAuth, async (req, res) => {
   try {
     const size = Math.min(100, Math.max(1, parseInt(req.query.size) || 30));
-    const { category, difficulty, excludeMastered } = req.query;
-    const match = {};
-    if (category) match.category = String(category);
-    if (difficulty) match.difficulty = String(difficulty);
-    if (excludeMastered === 'true') match.isMastered = false;
+    const match = buildRandomBatchMatch(req.query);
 
     const pipeline = [];
     if (Object.keys(match).length > 0) pipeline.push({ $match: match });

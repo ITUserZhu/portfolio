@@ -2,6 +2,15 @@ function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+const DEFAULT_VOCABULARY_CATEGORIES = ['daily', 'tech', 'business', 'academic', 'travel'];
+
+function resolveCategoryFilter(category) {
+  if (!category) return undefined;
+  return String(category) === 'other'
+    ? { $nin: DEFAULT_VOCABULARY_CATEGORIES }
+    : String(category);
+}
+
 function intersectArrays(left, right) {
   const rightSet = new Set(right.map(String));
   return left.filter((item) => rightSet.has(String(item)));
@@ -22,7 +31,8 @@ function buildVocabularyFilter(query, userState = {}) {
     ];
   }
 
-  if (category) filter.category = String(category);
+  const categoryFilter = resolveCategoryFilter(category);
+  if (categoryFilter) filter.category = categoryFilter;
   if (difficulty) filter.difficulty = String(difficulty);
 
   if (isFavorite === 'true') {
@@ -41,6 +51,20 @@ function buildVocabularyFilter(query, userState = {}) {
   return filter;
 }
 
+function buildRandomBatchMatch(query = {}) {
+  const { category, difficulty, excludeMastered } = query;
+  const match = {};
+  const categoryFilter = resolveCategoryFilter(category);
+
+  if (categoryFilter) match.category = categoryFilter;
+  if (difficulty) match.difficulty = String(difficulty);
+  if (excludeMastered === 'true') match.isMastered = false;
+
+  return match;
+}
+
 module.exports = {
   buildVocabularyFilter,
+  buildRandomBatchMatch,
+  DEFAULT_VOCABULARY_CATEGORIES,
 };

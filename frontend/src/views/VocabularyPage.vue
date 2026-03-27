@@ -35,6 +35,7 @@ const selectedVocabulary = ref(null);
 const jsonMode = ref(false);
 const jsonInput = ref('');
 const jsonError = ref('');
+const customCategory = ref('');
 
 // 语音播放
 const { isSpeaking, isSupported, speak, stop } = useSpeech();
@@ -80,9 +81,13 @@ const categoryOptions = [
   { value: 'travel', label: '旅行' },
   { value: 'other', label: '其他' }
 ];
+const defaultCategoryValues = categoryOptions
+  .filter((option) => option.value !== 'other')
+  .map((option) => option.value);
 
 // 计算属性
 const filteredVocabularies = computed(() => vocabularies.value);
+const showCustomCategoryField = computed(() => form.category === 'other');
 
 // 分页：只显示当前页附近的页码
 const visiblePages = computed(() => {
@@ -99,6 +104,14 @@ function getFilterButtonStyle(isActive) {
   return isActive
     ? 'background: var(--ink-accent); border-color: transparent; color: var(--ink-bg);'
     : 'background: var(--ink-card-bg); border-color: var(--ink-border); color: var(--ink-text);';
+}
+
+function isDefaultCategory(category) {
+  return defaultCategoryValues.includes(category);
+}
+
+function getEditableCategory(category) {
+  return isDefaultCategory(category) ? category : 'other';
 }
 
 // 获取词汇列表
@@ -170,6 +183,7 @@ function resetForm() {
   form.examples = [{ sentence: '', translation: '' }];
   form.difficulty = 'beginner';
   form.category = 'daily';
+  customCategory.value = '';
   editingVocabulary.value = null;
 }
 
@@ -181,12 +195,16 @@ function openAddModal() {
 
 // 打开编辑模态框
 function openEditModal(vocabulary) {
+  const actualCategory = typeof vocabulary.category === 'string' ? vocabulary.category.trim() : '';
+
   editingVocabulary.value = vocabulary;
   Object.assign(form, {
     ...vocabulary,
     phrases: vocabulary.phrases.length ? [...vocabulary.phrases] : [{ phrase: '', translation: '' }],
-    examples: vocabulary.examples.length ? [...vocabulary.examples] : [{ sentence: '', translation: '' }]
+    examples: vocabulary.examples.length ? [...vocabulary.examples] : [{ sentence: '', translation: '' }],
+    category: getEditableCategory(actualCategory)
   });
+  customCategory.value = actualCategory && !isDefaultCategory(actualCategory) ? actualCategory : '';
   showAddModal.value = true;
 }
 
@@ -206,9 +224,19 @@ async function handleSubmit() {
     return;
   }
 
+  const resolvedCategory = form.category === 'other'
+    ? customCategory.value.trim()
+    : form.category;
+
+  if (!resolvedCategory) {
+    toast.warning('请选择分类或填写自定义分类');
+    return;
+  }
+
   // 过滤空的词组和例句
   const data = {
     ...form,
+    category: resolvedCategory,
     phrases: form.phrases.filter(p => p.phrase && p.translation),
     examples: form.examples.filter(e => e.sentence && e.translation)
   };
@@ -366,6 +394,12 @@ function getDifficultyColor(difficulty) {
 function getCategoryLabel(category) {
   const option = categoryOptions.find(o => o.value === category);
   return option ? option.label : category;
+}
+
+function handleFormCategoryChange() {
+  if (form.category !== 'other') {
+    customCategory.value = '';
+  }
 }
 
 // 播放语音
@@ -889,6 +923,7 @@ onMounted(() => {
                 </label>
                 <AppSelect
                   v-model="form.category"
+                  @change="handleFormCategoryChange"
                   surface="base"
                   class="w-full"
                 >
@@ -896,6 +931,21 @@ onMounted(() => {
                     {{ opt.label }}
                   </option>
                 </AppSelect>
+              </div>
+              <div v-if="showCustomCategoryField">
+                <label class="block text-xs md:text-sm font-medium mb-2 md:mb-3" style="color: var(--ink-text);">
+                  自定义分类 *
+                </label>
+                <input
+                  v-model="customCategory"
+                  type="text"
+                  required
+                  placeholder="例如：medical、finance、culture"
+                  class="w-full px-4 md:px-5 py-3 md:py-4 rounded-xl border text-xs md:text-sm outline-none
+                         transition-all duration-300 focus:border-[var(--ink-accent)] focus:shadow-lg"
+                  style="background: var(--ink-bg); border-color: var(--ink-border);
+                         color: var(--ink-text);"
+                />
               </div>
             </div>
 

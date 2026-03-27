@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { buildVocabularyFilter } = require('../utils/vocabularyQuery');
+const { buildVocabularyFilter, buildRandomBatchMatch } = require('../utils/vocabularyQuery');
 
 test('buildVocabularyFilter scopes favorite filtering to the current user ids', () => {
   const filter = buildVocabularyFilter(
@@ -29,4 +29,49 @@ test('buildVocabularyFilter combines mastered ids with existing filters', () => 
 
   assert.equal(filter.category, 'daily');
   assert.deepEqual(filter._id, { $in: ['word-1'] });
+});
+
+test('buildVocabularyFilter maps category=other to all non-default categories', () => {
+  const filter = buildVocabularyFilter(
+    { category: 'other' },
+    { favoriteIds: [], masteredIds: [] }
+  );
+
+  assert.deepEqual(filter.category, {
+    $nin: ['daily', 'tech', 'business', 'academic', 'travel'],
+  });
+});
+
+test('buildVocabularyFilter keeps other category aggregation when combined with mastered ids', () => {
+  const filter = buildVocabularyFilter(
+    { category: 'other', isMastered: 'true' },
+    { favoriteIds: [], masteredIds: ['word-2'] }
+  );
+
+  assert.deepEqual(filter.category, {
+    $nin: ['daily', 'tech', 'business', 'academic', 'travel'],
+  });
+  assert.deepEqual(filter._id, { $in: ['word-2'] });
+});
+
+test('buildRandomBatchMatch maps category=other to all non-default categories', () => {
+  const match = buildRandomBatchMatch({ category: 'other' });
+
+  assert.deepEqual(match.category, {
+    $nin: ['daily', 'tech', 'business', 'academic', 'travel'],
+  });
+});
+
+test('buildRandomBatchMatch preserves difficulty and excludeMastered with other categories', () => {
+  const match = buildRandomBatchMatch({
+    category: 'other',
+    difficulty: 'advanced',
+    excludeMastered: 'true',
+  });
+
+  assert.deepEqual(match, {
+    category: { $nin: ['daily', 'tech', 'business', 'academic', 'travel'] },
+    difficulty: 'advanced',
+    isMastered: false,
+  });
 });
