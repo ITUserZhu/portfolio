@@ -2,7 +2,7 @@ function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-const DEFAULT_VOCABULARY_CATEGORIES = ['daily', 'tech', 'business', 'academic', 'travel'];
+const DEFAULT_VOCABULARY_CATEGORIES = ['daily', 'tech', 'business', 'academic', 'travel', 'tool', 'necessities', 'furniture', 'transportation', '职业', 'fruit', 'vegetable', 'plants', 'mammal', 'arthropod', 'bird', 'fish', 'reptile', 'amphibian'];
 
 function resolveCategoryFilter(category) {
   if (!category) return undefined;

@@ -79,6 +79,20 @@ const categoryOptions = [
   { value: 'business', label: '商务' },
   { value: 'academic', label: '学术' },
   { value: 'travel', label: '旅行' },
+  { value: 'tool', label: '工具' },
+  { value: 'necessities', label: '必需品' },
+  { value: 'furniture', label: '家具' },
+  { value: 'transportation', label: '交通' },
+  { value: '职业', label: '职业' },
+  { value: 'fruit', label: '水果' },
+  { value: 'vegetable', label: '蔬菜' },
+  { value: 'plants', label: '植物' },
+  { value: 'mammal', label: '哺乳动物' },
+  { value: 'arthropod', label: '节肢动物' },
+  { value: 'bird', label: '鸟类' },
+  { value: 'fish', label: '鱼类' },
+  { value: 'reptile', label: '爬行动物' },
+  { value: 'amphibian', label: '两栖动物' },
   { value: 'other', label: '其他' }
 ];
 const defaultCategoryValues = categoryOptions
