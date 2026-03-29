@@ -113,6 +113,10 @@ function bindCard() {
   });
 }
 
+function updateSessionStat(key, delta) {
+  sessionStats.value[key] = Math.max(0, sessionStats.value[key] + delta);
+}
+
 // 加载一批单词
 async function loadBatch() {
   loading.value = true;
@@ -214,7 +218,7 @@ async function handleMastered() {
     try {
       await toggleMastered(currentWord.value._id);
       currentWord.value.isMastered = true;
-      sessionStats.value.mastered++;
+      updateSessionStat('mastered', 1);
     } catch (err) {
       console.error('操作失败:', err);
     }
@@ -242,7 +246,7 @@ async function handleFavorite() {
     try {
       await toggleFavorite(currentWord.value._id);
       currentWord.value.isFavorite = true;
-      sessionStats.value.favorited++;
+      updateSessionStat('favorited', 1);
     } catch (err) {
       console.error('操作失败:', err);
     }
@@ -260,6 +264,28 @@ async function handleFavorite() {
       }
     });
     bindCard();
+  }
+}
+
+async function toggleMasteredInPlace() {
+  if (isAnimating.value || !currentWord.value) return;
+  try {
+    await toggleMastered(currentWord.value._id);
+    currentWord.value.isMastered = !currentWord.value.isMastered;
+    updateSessionStat('mastered', currentWord.value.isMastered ? 1 : -1);
+  } catch (err) {
+    console.error('操作失败:', err);
+  }
+}
+
+async function toggleFavoriteInPlace() {
+  if (isAnimating.value || !currentWord.value) return;
+  try {
+    await toggleFavorite(currentWord.value._id);
+    currentWord.value.isFavorite = !currentWord.value.isFavorite;
+    updateSessionStat('favorited', currentWord.value.isFavorite ? 1 : -1);
+  } catch (err) {
+    console.error('操作失败:', err);
   }
 }
 
@@ -549,7 +575,7 @@ function categoryLabel(category) {
           </button>
 
           <button
-            @click="handleFavorite"
+            @click="toggleFavoriteInPlace"
             class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all
                    hover:bg-yellow-500/10 active:scale-95"
             :style="{ color: currentWord?.isFavorite ? '#f59e0b' : 'inherit' }"
@@ -561,7 +587,7 @@ function categoryLabel(category) {
           </button>
 
           <button
-            @click="handleMastered"
+            @click="toggleMasteredInPlace"
             class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all
                    hover:bg-green-500/10 active:scale-95"
             :style="{ color: currentWord?.isMastered ? '#22c55e' : 'inherit' }"
